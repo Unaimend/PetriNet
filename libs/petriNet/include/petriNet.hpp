@@ -2,6 +2,7 @@
 #define PETRINET_HPP
 #include <cstddef>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 #include <ranges>
 #include <numeric>
@@ -11,6 +12,15 @@
 #include <algorithm>
 #include <filesystem>
 #include <print>
+
+#ifdef DEBUG
+#define D(x) x
+#else
+#define D(x) 
+#endif
+
+
+
 void helloFromLib();
 namespace petrinet { 
 using ID = std::size_t;
@@ -137,22 +147,22 @@ public:
       auto incomingTokens = std::vector<std::size_t>{};
       for(const Arc& arc: outGoingArcs) {
 
-        std::println("Arc {} is leaving from {}",arc.id, id);
+        D(std::println("Arc {} is leaving from {}",arc.id, id);)
         // Because we are iteratong over transitions and looking at arcs that 
         // leave me I know that arc.endID refers to a place
         auto l = places.at(arc.endID).getLabel();
         auto t = places.at(arc.endID).getTokens();
-        std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);
+        D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
         outgoingTokens.push_back(t);
       }
       
       for(const Arc& arc: inComingArcs) {
-        std::println("Arc {} coming into {}",arc.id, id);
+        D(std::println("Arc {} coming into {}",arc.id, id);)
         // Because we are iteratong over transitions and looking at arcs that 
         // coming in to me I know that arc.startID refers to a place
         auto l = places.at(arc.startID).getLabel();
         auto t = places.at(arc.startID).getTokens();
-        std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);
+        D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
         incomingTokens.push_back(t);
       }
       //TODO I dont need the min I just hae to check that 0 is not in there
@@ -161,10 +171,10 @@ public:
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
 
-      std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";
+      D(std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";)
 
       if(*minIncToken > 0 && incSum > outSum) {
-        std::println("{} has fired", id);
+        D(std::println("{} has fired", id);)
         for(const Arc& arc: outGoingArcs) {
           auto t = places.at(arc.endID).getTokens();
           places.at(arc.endID).setTokens(t+1);
@@ -232,9 +242,9 @@ public:
 private: 
   //TODO Make one map that contains transition and place that. 
   //Each elements carreis is typer as an enum
-  std::map<ID, Place> places;
-  std::map<ID, Transition> transitions;
-  std::map<ID, Arc> arcs;
+  std::unordered_map<ID, Place> places;
+  std::unordered_map<ID, Transition> transitions;
+  std::unordered_map<ID, Arc> arcs;
   std::random_device rd;
   std::mt19937 gen {rd()};
  

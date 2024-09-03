@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 
   petrinet::PetriNet p;
   p.loadFromJSON(filepath);
-  p.simulateNShuffe(10000);
+  p.simulateNShuffe(100'000);
   p.toDot("test.dot");
   return 0;
 }
