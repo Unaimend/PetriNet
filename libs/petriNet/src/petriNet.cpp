@@ -61,4 +61,31 @@ namespace petrinet {
     }
     input_file.close();
   }
+
+  void PetriNet::toDot(const std::filesystem::path& path) {
+    std::ofstream output_file{path};
+    if (!output_file.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+    }
+    output_file << "digraph PetriNet {" << std::endl;
+
+    // Define place nodes
+    for (const auto& [id, place] : places) {
+      output_file << "  " << id << " [shape=circle, label=\"" << place.getLabel() << "\n" << place.getTokens() << "\"];" << std::endl; 
+    }
+
+    // Define transition nodes
+    for (const auto& [id, transition] : transitions) {
+      output_file << "  " << id << " [shape=box, label=\"" << transition.getLabel() << "\"];" << std::endl;
+    }
+    
+    for (const auto& [id, arc] : arcs) {
+      output_file << "  " << arc.startID << " -> " << arc.endID << ";" << std::endl;
+    }
+
+    output_file << "}" << std::endl;
+    output_file.close();
+
+    
+  }
 }

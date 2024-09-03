@@ -26,6 +26,14 @@ public:
   Place& operator=(Place&&) = default;
   ~Place() = default;
 
+  const std::string& getLabel() const {
+    return label;
+  }
+
+  const std::size_t& getTokens() const {
+    return tokens;
+  }
+
 private:
   ID id;
   std::string label;
@@ -46,6 +54,9 @@ public:
   Transition& operator=(Transition&&) = default;
   ~Transition() = default;
 
+  const std::string& getLabel() const {
+    return label;
+  }
 private:
   ID id;
   std::string label;
@@ -79,6 +90,8 @@ public:
   void addArc(ID id, const Arc& arc) {
     arcs.insert_or_assign(id, arc);
   }
+
+  void toDot(const std::filesystem::path& path);
 
 private: 
   std::map<ID, Place> places;
