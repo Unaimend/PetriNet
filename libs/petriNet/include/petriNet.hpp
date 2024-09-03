@@ -11,15 +11,20 @@ using ID = std::size_t;
 
 // TODO Those could be made into the same type
 // then we could just look up the ids in the arc in one map
+//
+//Reason for std::move https://old.reddit.com/r/cpp_questions/comments/lzqc3j/passing_rvalue_reference_forward/
 class Place {
 public:
+// TODO Maybe take as lvalue and moce (i.e. no &&)
   Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) : 
-    id(id), label(label), arcs(arcs), tokens(tokens) {
+    id{id}, label{label}, arcs{std::move(arcs)}, tokens{tokens} {
   }
   Place(const Place&) = delete;
+  Place& operator=(const Place&) = delete;
 //  TODO Check what the default move constructor does
   Place(Place&&) = default;
   Place& operator=(Place&&) = default;
+  ~Place() = default;
 
 private:
   ID id;
@@ -31,12 +36,15 @@ private:
 
 class Transition {
 public:
-  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) : id(id), label(label), arcs(arcs) {
+  // TODO Maybe take as lvalue and moce
+  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) : id{id}, label{label}, arcs{std::move(arcs)} {
   }
   Transition(const Transition&) = delete;
+  Transition& operator=(const Transition &) = delete;
 //  TODO Check what the default move constructor does
   Transition(Transition&&) = default;
   Transition& operator=(Transition&&) = default;
+  ~Transition() = default;
 
 private:
   ID id;
@@ -56,11 +64,8 @@ class PetriNet
 
 public:
   void loadFromJSON(const std::filesystem::path& path);
-  //void addTransition(ID id, const Transition& transition) {
-  //  transitions.insert_or_assign(id, transition);
-  //}
 
-
+// TODO Maybe take as lvalue and moce
   void addTransition(ID id, Transition&& transition) {
     transitions.insert_or_assign(id, std::move(transition));
   }

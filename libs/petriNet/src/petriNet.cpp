@@ -1,9 +1,13 @@
 #include <iostream> 
-#include "../include/json.hpp"
-#include "../include/petriNet.hpp"
-#include <iostream>
 #include <fstream>
 #include <print>
+#include <vector>
+#include <utility> //std::move
+#include <cstddef>
+#include <string>
+
+#include "../include/json.hpp"
+#include "../include/petriNet.hpp"
 
 void helloFromLib() {
   std::cout << "Hello from lib!\n";
