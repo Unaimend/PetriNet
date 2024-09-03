@@ -32,8 +32,8 @@ using ID = std::size_t;
 class Place {
 public:
 // TODO Maybe take as lvalue and moce (i.e. no &&)
-  Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) : 
-    id{id}, label{label}, arcs{std::move(arcs)}, tokens{tokens} {
+  Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) noexcept : 
+    id{id}, label{label}, arcs{std::move(arcs)}, tokens{tokens}   {
   }
   Place(const Place&) = delete;
   Place& operator=(const Place&) = delete;
@@ -42,11 +42,11 @@ public:
   Place& operator=(Place&&) = default;
   ~Place() = default;
 
-  const std::string& getLabel() const {
+  [[nodiscard]] const std::string& getLabel() const noexcept{
     return label;
   }
 
-  const std::size_t& getTokens() const {
+  [[nodiscard]] const std::size_t& getTokens() const noexcept {
     return tokens;
   }
 
@@ -74,7 +74,7 @@ struct Arc {
 class Transition {
 public:
   // TODO Maybe take as lvalue and moce
-  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) : id{id}, label{label}, arcs{std::move(arcs)} {
+  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) noexcept : id{id}, label{label}, arcs{std::move(arcs)}  {
   }
   Transition(const Transition&) = delete;
   Transition& operator=(const Transition &) = delete;
@@ -83,7 +83,7 @@ public:
   Transition& operator=(Transition&&) = default;
   ~Transition() = default;
 
-  const std::string& getLabel() const {
+  [[nodiscard]] const std::string& getLabel() const noexcept {
     return label;
   }
 

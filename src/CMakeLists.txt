@@ -12,7 +12,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(CMAKE_BUILD_TYPE Debug)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -g -O1)
+  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3)
 endif()
 # Add an executable target called "baseline"
 
