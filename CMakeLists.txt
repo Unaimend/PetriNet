@@ -5,4 +5,7 @@ project(Simulator VERSION 0.1)
 set(CMAKE_CXX_CLANG_TIDY clang-tidy)
 add_subdirectory(src bin)
 
+include(CTest) 
+add_subdirectory(Tests)
+
 
