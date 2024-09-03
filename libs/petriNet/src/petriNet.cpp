@@ -52,7 +52,7 @@ namespace petrinet {
         ID startID = s["startID"];
         ID endID = s["endID"];
         ID edgeWeight = s["edgeWeight"];
-        std::println("Arc initialized with id {} from {} to {} width weight {}", id, startID, endID, edgeWeight);
+        std::println("Arc initialized with id {} from {} to {} with weight {}", id, startID, endID, edgeWeight);
 
         addArc(id, {id, startID, endID, edgeWeight});
       } else {
