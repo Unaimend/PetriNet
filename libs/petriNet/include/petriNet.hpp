@@ -137,34 +137,16 @@ public:
     std::ranges::shuffle(keys, gen);
 
     for (const auto& id : keys) {
+      // Go over each possible transition and
+      // collect outgoing and incoming arcs for that id
       auto outGoingArcs = getOutGoingArcs(id);
       auto inComingArcs = getInComingArcs(id);
 
 
       // TODO Preallocate the right capacity
       // TODO Move the code below into own function
-      auto outgoingTokens = std::vector<std::size_t>{};
-      auto incomingTokens = std::vector<std::size_t>{};
-      for(const Arc& arc: outGoingArcs) {
-
-        D(std::println("Arc {} is leaving from {}",arc.id, id);)
-        // Because we are iteratong over transitions and looking at arcs that 
-        // leave me I know that arc.endID refers to a place
-        auto l = places.at(arc.endID).getLabel();
-        auto t = places.at(arc.endID).getTokens();
-        D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
-        outgoingTokens.push_back(t);
-      }
-      
-      for(const Arc& arc: inComingArcs) {
-        D(std::println("Arc {} coming into {}",arc.id, id);)
-        // Because we are iteratong over transitions and looking at arcs that 
-        // coming in to me I know that arc.startID refers to a place
-        auto l = places.at(arc.startID).getLabel();
-        auto t = places.at(arc.startID).getTokens();
-        D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
-        incomingTokens.push_back(t);
-      }
+      auto outgoingTokens = getOutGoingTokens(outGoingArcs);
+      auto incomingTokens = getIncomingTokens(inComingArcs);
       //TODO I dont need the min I just hae to check that 0 is not in there
       auto minIncToken = std::min_element(incomingTokens.begin(), incomingTokens.end());
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
@@ -239,6 +221,36 @@ public:
     return outGoingArcs;
   }
 
+  std::vector<std::size_t> getOutGoingTokens(const std::vector<Arc>& outGoingArcs) {
+    auto outgoingTokens = std::vector<std::size_t>{};
+    for(const Arc& arc: outGoingArcs) {
+
+      D(std::println("Arc {} is leaving from {}",arc.id, id);)
+      // Because we are iteratong over transitions and looking at arcs that 
+      // leave me I know that arc.endID refers to a place
+      auto l = places.at(arc.endID).getLabel();
+      auto t = places.at(arc.endID).getTokens();
+      D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
+      outgoingTokens.push_back(t);
+    }
+    // NRVO is madated by C++17
+    return outgoingTokens;
+  }
+
+
+  std::vector<std::size_t> getIncomingTokens(const std::vector<Arc>& inComingArcs) {
+    auto incomingTokens = std::vector<std::size_t>{};
+    for(const Arc& arc: inComingArcs) {
+      D(std::println("Arc {} coming into {}",arc.id, id);)
+      // Because we are iteratong over transitions and looking at arcs that 
+      // coming in to me I know that arc.startID refers to a place
+      auto l = places.at(arc.startID).getLabel();
+      auto t = places.at(arc.startID).getTokens();
+      D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
+      incomingTokens.push_back(t);
+    }
+    // NRVO is madated by C++17
+    return incomingTokens;
 private: 
   //TODO Make one map that contains transition and place that. 
   //Each elements carreis is typer as an enum
