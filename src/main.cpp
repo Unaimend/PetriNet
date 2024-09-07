@@ -10,7 +10,9 @@ int main(int argc, char **argv) {
   p.loadFromJSON(filepath);
 
   p.simulateNShuffe(1'000'000);
-  p.toDot("test.dot");
-  p.saveTokenHistory("Test.json");
+  //p.toDot("test.dot");
+  p.saveFinalTokenCount("FTC.json");
+  //p.saveTokenHistory("TH.json");
+  //p.saveReactionActivity("RA.json");
   return 0;
 }

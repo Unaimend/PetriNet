@@ -17,6 +17,7 @@
 
 #define METRICS
 #define TOKEN_HISTORY
+#define REACTION_ACTIVITY
 
 #ifdef DEBUG
 #define D(x) x
@@ -36,6 +37,13 @@
 #define TH(...) __VA_ARGS__
 #else
 #define TH(x) 
+#endif
+
+
+#ifdef REACTION_ACTIVITY
+#define RA(...) __VA_ARGS__
+#else
+#define RA(x) 
 #endif
 
 
@@ -167,7 +175,6 @@ public:
       }
 #endif
     }
-
   }
 
   inline void simulateSingleGradient() {
@@ -203,6 +210,7 @@ public:
       D(std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";)
 
       if(*minIncToken > 0 && incSum > outSum) {
+        RA(reactionActivity[transitions.at(id).getLabel()]++;)
         D(std::println("{} has fired", id);)
         for(const Arc& arc: outGoingArcs) {
           auto t = places.at(arc.endID).getTokens();
@@ -301,8 +309,11 @@ public:
     return incomingTokens;
   }
 
-#if defined(METRICS) && defined(TOKEN_HISTORY)
-  void saveTokenHistory(const std::filesystem::path& path);
+  void saveFinalTokenCount(const std::filesystem::path& path);
+#if defined(METRICS) 
+  TH(void saveTokenHistory(const std::filesystem::path& path);)
+  RA(void saveReactionActivity(const std::filesystem::path& path);)
+
 #endif
 private: 
   //TODO Make one map that contains transition and place that. 
@@ -315,6 +326,7 @@ private:
 
 #ifdef METRICS
   TH(std::unordered_map<std::string, std::vector<std::size_t>> tokenHistory;)
+  RA(std::unordered_map<std::string, std::size_t> reactionActivity;)
 #endif
 };
 
