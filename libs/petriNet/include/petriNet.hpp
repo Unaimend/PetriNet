@@ -1,8 +1,10 @@
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
 #include <cstddef>
+#include <iterator>
 #include <map>
 #include <unordered_map>
+#include "../include/json.hpp"
 #include <iostream>
 #include <ranges>
 #include <numeric>
@@ -13,10 +15,27 @@
 #include <filesystem>
 #include <print>
 
+#define METRICS
+#define TOKEN_HISTORY
+
 #ifdef DEBUG
 #define D(x) x
 #else
 #define D(x) 
+#endif
+
+
+#ifdef METRICS
+#define M(x) x
+#else
+#define M(x)
+#endif
+
+
+#ifdef TOKEN_HISTORY
+#define TH(...) __VA_ARGS__
+#else
+#define TH(x) 
 #endif
 
 
@@ -35,7 +54,12 @@ public:
   Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) noexcept : 
     id{id}, label{label}, arcs{std::move(arcs)}, tokens{tokens}   {
   }
-  Place(const Place&) = delete;
+
+#ifdef METRICS
+  explicit Place(const Place& that) : id{that.id}, label{that.label}, arcs{that.arcs}, tokens{that.tokens} {
+  }
+#endif
+
   Place& operator=(const Place&) = delete;
 //  TODO Check what the default move constructor does
   Place(Place&&) = default;
@@ -48,6 +72,14 @@ public:
 
   [[nodiscard]] const std::size_t& getTokens() const noexcept {
     return tokens;
+  }
+
+  [[nodiscard]] const ID&  getID() const noexcept {
+    return id;
+  }
+
+  [[nodiscard]] const std::vector<ID>&  getArcs() const noexcept {
+    return arcs;
   }
 
   void setTokens(std::size_t token) {
@@ -87,6 +119,15 @@ public:
     return label;
   }
 
+  [[nodiscard]] const ID&  getID() const noexcept {
+    return id;
+  }
+
+  [[nodiscard]] const std::vector<ID>&  getArcs() const noexcept {
+    return arcs;
+  }
+
+
 private:
   ID id;
   std::string label;
@@ -120,6 +161,11 @@ public:
   inline void simulateNShuffe(int N) {
     while((N--) != 0) {
       simulateSingleGradient();
+#if defined(METRICS) 
+      for(auto& [id, place] : places) {
+        tokenHistory[place.getLabel()].push_back(place.getTokens());
+      }
+#endif
     }
 
   }
@@ -144,7 +190,8 @@ public:
 
 
       // TODO Preallocate the right capacity
-      // TODO Move the code below into own function
+      // Get the tokens from incoming and outgoing arcs of `id`
+      // We need to know if the the reaction is allowed to fire
       auto outgoingTokens = getOutGoingTokens(outGoingArcs);
       auto incomingTokens = getIncomingTokens(inComingArcs);
       //TODO I dont need the min I just hae to check that 0 is not in there
@@ -221,6 +268,7 @@ public:
     return outGoingArcs;
   }
 
+
   std::vector<std::size_t> getOutGoingTokens(const std::vector<Arc>& outGoingArcs) {
     auto outgoingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: outGoingArcs) {
@@ -251,6 +299,11 @@ public:
     }
     // NRVO is madated by C++17
     return incomingTokens;
+  }
+
+#if defined(METRICS) && defined(TOKEN_HISTORY)
+  void saveTokenHistory(const std::filesystem::path& path);
+#endif
 private: 
   //TODO Make one map that contains transition and place that. 
   //Each elements carreis is typer as an enum
@@ -259,9 +312,12 @@ private:
   std::unordered_map<ID, Arc> arcs;
   std::random_device rd;
   std::mt19937 gen {rd()};
- 
- 
+
+#ifdef METRICS
+  TH(std::unordered_map<std::string, std::vector<std::size_t>> tokenHistory;)
+#endif
 };
+
 }
 #endif
 

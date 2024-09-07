@@ -17,6 +17,7 @@ namespace petrinet {
   using json = nlohmann::json;
 
 
+  //TODO Replace bei nlohman code
   void PetriNet::loadFromJSON(const std::filesystem::path& path) {
     std::ifstream input_file{path};
     if (!input_file.is_open()) {
@@ -85,7 +86,20 @@ namespace petrinet {
 
     output_file << "}" << std::endl;
     output_file.close();
-
-    
   }
+
+#ifdef METRICS
+# ifdef TOKEN_HISTORY
+  void PetriNet::saveTokenHistory(const std::filesystem::path& path) {
+    json j;
+    j = tokenHistory;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+
+  }
+#endif
+#endif
 }
