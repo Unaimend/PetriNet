@@ -114,8 +114,8 @@ namespace petrinet {
 
   }
 #endif
-#ifdef REACTION_ACTIVITY
-  void PetriNet::saveReactionActivity(const std::filesystem::path& path) {
+#ifdef REACTION_ACTIVITY_COUNT
+  void PetriNet::saveReactionActivityCount(const std::filesystem::path& path) {
     json j;
     j = reactionActivity;
     std::ofstream o(path);
