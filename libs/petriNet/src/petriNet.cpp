@@ -22,6 +22,7 @@ namespace petrinet {
     std::ifstream input_file{path};
     if (!input_file.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
+      throw std::runtime_error("File not found: " / path);
     }
 
     json parsed_json;

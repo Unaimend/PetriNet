@@ -18,6 +18,7 @@ add_executable (simple_tests src/simple_tests.cpp)
 target_include_directories(simple_tests PRIVATE ${Simulator_SOURCE_DIR}/include)
 target_include_directories(simple_tests PRIVATE include)
 
+target_link_libraries(simple_tests PUBLIC petriNet)
 
 add_test (NAME MyTest COMMAND simple_tests)
 

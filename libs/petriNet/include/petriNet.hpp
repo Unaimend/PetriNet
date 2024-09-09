@@ -178,6 +178,20 @@ public:
     arcs.insert_or_assign(id, arc);
   }
 
+  const std::unordered_map<ID, Transition>& getTransitions() const & {  
+    return transitions;
+  }
+
+
+  const std::unordered_map<ID, Place>& getPlaces() const & {  
+    return places;
+  }
+
+
+  const std::unordered_map<ID, Arc>& getArcs() const & {  
+    return arcs;
+  }
+
   void toDot(const std::filesystem::path& path);
 
 
