@@ -1,1 +1,21 @@
-{"counter":2,"shapes":[{"id":1,"x":414,"y":251,"label":"","fillColor":"blue","isSelected":false,"arcStart":false,"arcEnd":false,"arcIDS":[],"hidden":false,"width":20,"height":50,"type":"Rectangle","canFire":false}]}
+{
+  "counter": 2,
+  "shapes": [
+    {
+      "id": 1,
+      "x": 414,
+      "y": 251,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": false,
+      "arcIDS": [],
+      "hidden": false,
+      "width": 20,
+      "height": 50,
+      "type": "Rectangle",
+      "canFire": false
+    }
+  ]
+}
