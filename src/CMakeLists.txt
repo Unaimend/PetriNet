@@ -21,7 +21,7 @@ endif()
 set(TARGET_NAME "simulator")
 
 
-add_executable(${TARGET_NAME} main.cpp)
+add_executable(${TARGET_NAME} main.cpp run.cpp)
 target_link_libraries(${TARGET_NAME} PUBLIC petriNet)
 
 add_subdirectory(../libs ../libs)
