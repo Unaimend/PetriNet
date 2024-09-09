@@ -88,8 +88,20 @@ namespace petrinet {
     output_file.close();
   }
 
+  void PetriNet::saveFinalTokenCount(const std::filesystem::path& path) {
+    json j;
+    for(const auto& [id, place] : places) {
+      j[place.getLabel()] = place.getTokens();
+    }
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
+  }
 #ifdef METRICS
-# ifdef TOKEN_HISTORY
+#ifdef TOKEN_HISTORY
   void PetriNet::saveTokenHistory(const std::filesystem::path& path) {
     json j;
     j = tokenHistory;
@@ -98,6 +110,33 @@ namespace petrinet {
     if(o.is_open()) {
       o << j.dump(2);
     }
+    o.close();
+
+  }
+#endif
+#ifdef REACTION_ACTIVITY_COUNT
+  void PetriNet::saveReactionActivityCount(const std::filesystem::path& path) {
+    json j;
+    j = reactionActivity;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
+
+  }
+#endif 
+#ifdef REACTION_ACTIVITY_HISTORY
+  void PetriNet::saveReactionActivityHistory(const std::filesystem::path& path) {
+    json j;
+    j = reactionActivityHistory;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
 
   }
 #endif

@@ -17,6 +17,8 @@
 
 #define METRICS
 #define TOKEN_HISTORY
+#define REACTION_ACTIVITY_HISTORY
+#define REACTION_ACTIVITY_COUNT
 
 #ifdef DEBUG
 #define D(x) x
@@ -39,6 +41,20 @@
 #endif
 
 
+#ifdef REACTION_ACTIVITY_COUNT
+#define RAC(...) __VA_ARGS__
+#else
+#define RAC(x) 
+#endif
+
+
+#ifdef REACTION_ACTIVITY_HISTORY
+#define RAH(...) __VA_ARGS__
+#else
+#define RAH(x) 
+#endif
+
+
 
 void helloFromLib();
 namespace petrinet { 
@@ -57,6 +73,7 @@ public:
 
 #ifdef METRICS
   explicit Place(const Place& that) : id{that.id}, label{that.label}, arcs{that.arcs}, tokens{that.tokens} {
+    // TODO CHeck that this is is not used in high-performance mode aka when metrics are turned off
   }
 #endif
 
@@ -115,14 +132,20 @@ public:
   Transition& operator=(Transition&&) = default;
   ~Transition() = default;
 
+  //TODO implement the && versions
+  //std::string getName() && { // when we no longer need the value return std::move(name); // we steal and return by value 
+  //}
+  
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
   [[nodiscard]] const std::string& getLabel() const noexcept {
     return label;
   }
 
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
   [[nodiscard]] const ID&  getID() const noexcept {
     return id;
   }
-
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
   [[nodiscard]] const std::vector<ID>&  getArcs() const noexcept {
     return arcs;
   }
@@ -150,7 +173,7 @@ public:
     places.insert_or_assign(id, std::move(place));
   }
 
-
+  //Small object no move necessary
   void addArc(ID id, const Arc& arc) {
     arcs.insert_or_assign(id, arc);
   }
@@ -162,12 +185,13 @@ public:
     while((N--) != 0) {
       simulateSingleGradient();
 #if defined(METRICS) 
+#ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
         tokenHistory[place.getLabel()].push_back(place.getTokens());
       }
 #endif
+#endif
     }
-
   }
 
   inline void simulateSingleGradient() {
@@ -201,8 +225,10 @@ public:
 
 
       D(std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";)
-
       if(*minIncToken > 0 && incSum > outSum) {
+        M(const auto label = transitions.at(id).getLabel();)
+        RAC(reactionActivity[label]++;)
+        RAH(reactionActivityHistory[label].push_back(true);)
         D(std::println("{} has fired", id);)
         for(const Arc& arc: outGoingArcs) {
           auto t = places.at(arc.endID).getTokens();
@@ -213,7 +239,8 @@ public:
           auto t = places.at(arc.startID).getTokens();
           places.at(arc.startID).setTokens(t -1);
         }
-
+      } else {
+        RAH(reactionActivityHistory[transitions.at(id).getLabel()].push_back(false);)
       }
     }
   }
@@ -301,8 +328,11 @@ public:
     return incomingTokens;
   }
 
-#if defined(METRICS) && defined(TOKEN_HISTORY)
-  void saveTokenHistory(const std::filesystem::path& path);
+  void saveFinalTokenCount(const std::filesystem::path& path);
+#if defined(METRICS) 
+  TH(void saveTokenHistory(const std::filesystem::path& path);)
+  RAC(void saveReactionActivityCount(const std::filesystem::path& path);)
+  RAH(void saveReactionActivityHistory(const std::filesystem::path& path);)
 #endif
 private: 
   //TODO Make one map that contains transition and place that. 
@@ -315,6 +345,8 @@ private:
 
 #ifdef METRICS
   TH(std::unordered_map<std::string, std::vector<std::size_t>> tokenHistory;)
+  RAC(std::unordered_map<std::string, std::size_t> reactionActivity;)
+  RAH(std::unordered_map<std::string, std::vector<bool>> reactionActivityHistory;)
 #endif
 };
 
