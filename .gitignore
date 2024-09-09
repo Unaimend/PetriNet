@@ -4,5 +4,4 @@ Testing/
 cmake-build-debug/
 test.dot
 test.png
-test/
 
