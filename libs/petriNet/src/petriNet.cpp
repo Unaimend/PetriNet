@@ -127,5 +127,18 @@ namespace petrinet {
 
   }
 #endif 
+#ifdef REACTION_ACTIVITY_HISTORY
+  void PetriNet::saveReactionActivityHistory(const std::filesystem::path& path) {
+    json j;
+    j = reactionActivityHistory;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
+
+  }
+#endif
 #endif
 }

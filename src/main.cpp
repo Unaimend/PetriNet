@@ -14,5 +14,6 @@ int main(int argc, char **argv) {
   p.saveFinalTokenCount("FTC.json");
   p.saveTokenHistory("TH.json");
   p.saveReactionActivityCount("RAC.json");
+  p.saveReactionActivityHistory("RAH.json");
   return 0;
 }
