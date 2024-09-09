@@ -12,7 +12,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(CMAKE_BUILD_TYPE Debug)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O3)
+  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O0)
 endif()
 # Add an executable target called "baseline"
 
@@ -21,8 +21,20 @@ endif()
 set(TARGET_NAME "simulator")
 
 
-add_executable(${TARGET_NAME} main.cpp run.cpp)
-target_link_libraries(${TARGET_NAME} PUBLIC petriNet)
+add_library(bootstrap STATIC run.cpp)
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug) 
+  message("Compiling in ${CMAKE_BUILD_TYPE} mode")
+  target_compile_options(bootstrap PRIVATE --coverage) 
+  target_link_options(bootstrap PUBLIC --coverage) 
+  add_custom_command(TARGET bootstrap PRE_BUILD COMMAND find ${CMAKE_BINARY_DIR} -type f -name '*.gcda' -exec rm {} +)
+endif()
+
+
+
+add_executable(${TARGET_NAME} main.cpp )
+target_link_libraries(${TARGET_NAME} PUBLIC bootstrap)
+target_link_libraries(bootstrap PUBLIC petriNet)
 
 add_subdirectory(../libs ../libs)
 
