@@ -1,3 +1,7 @@
+// TODO We could remap all the ids to make them contiguous and then use std::vectors for accessing the things
+// When doing this we have to make sure that that we have the different types ordered, because based on an ID
+// we ne do decide(FAST!!!) if an od belongs to and arc or a vec
+// When doing this it might be good to keep the clases AS SMALL as possible SSO for strings (label member) might be problematic there
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
 #include <cstddef>
@@ -14,11 +18,12 @@
 #include <algorithm>
 #include <filesystem>
 #include <print>
-
+#include <ranges>
 #define METRICS
 #define TOKEN_HISTORY
 #define REACTION_ACTIVITY_HISTORY
 #define REACTION_ACTIVITY_COUNT
+#define BLOCKED_BY_COUNT
 
 #ifdef DEBUG
 #define D(x) x
@@ -54,6 +59,12 @@
 #define RAH(x) 
 #endif
 
+#ifdef BLOCKED_BY_COUNT
+#define BBC(...) __VA_ARGS__
+#else
+#define BBC(x) 
+#endif
+
 
 
 void helloFromLib();
@@ -72,6 +83,11 @@ public:
   }
 
 #ifdef METRICS
+  //maybe replace by 
+  //copy(const Place& p)
+  //{
+  //  return Place(p.get..)
+  //}
   explicit Place(const Place& that) : id{that.id}, label{that.label}, arcs{that.arcs}, tokens{that.tokens} {
     // TODO CHeck that this is is not used in high-performance mode aka when metrics are turned off
   }
@@ -79,8 +95,8 @@ public:
 
   Place& operator=(const Place&) = delete;
 //  TODO Check what the default move constructor does
-  Place(Place&&) = default;
-  Place& operator=(Place&&) = default;
+  Place(Place&&) noexcept = default ;
+  Place& operator=(Place&&) noexcept = default;
   ~Place() = default;
 
   [[nodiscard]] const std::string& getLabel() const noexcept{
@@ -128,8 +144,8 @@ public:
   Transition(const Transition&) = delete;
   Transition& operator=(const Transition &) = delete;
 //  TODO Check what the default move constructor does
-  Transition(Transition&&) = default;
-  Transition& operator=(Transition&&) = default;
+  Transition(Transition&&) noexcept = default;
+  Transition& operator=(Transition&&) noexcept = default;
   ~Transition() = default;
 
   //TODO implement the && versions
@@ -197,6 +213,9 @@ public:
 
   inline void simulateNShuffe(int N) {
     while((N--) != 0) {
+      if(N % 100) {
+        std::cout << N << '\n';
+      }
       simulateSingleGradient();
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
@@ -233,8 +252,26 @@ public:
       auto outgoingTokens = getOutGoingTokens(outGoingArcs);
       auto incomingTokens = getIncomingTokens(inComingArcs);
       //TODO I dont need the min I just hae to check that 0 is not in there
-      auto minIncToken = std::min_element(incomingTokens.begin(), incomingTokens.end());
       auto minIncToken = std::ranges::min_element(incomingTokens);
+#ifdef METRICS
+
+#ifdef BLOCKED_BY_COUNT
+      // Because we only fire if the sum of all input tokens is bigger then sum of all output tokens
+      // it would be interesting to know how is responsible for blocking the reactiong
+      // id is a transition id
+      for(const Arc& arc: inComingArcs) {
+        // We might be able to use the data from getIncomingTokens from above
+        const std::string& l = places.at(arc.startID).getLabel();
+        auto t = places.at(arc.startID).getTokens();
+        if (t == 0) {
+          //l is a blocking input metabolite
+          const auto& rl = transitions.at(id).getLabel();
+          blockedByCount.insert({rl, {}});
+          blockedByCount.at(rl)[l] += 1;
+        }
+      }
+#endif
+#endif
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
@@ -316,14 +353,14 @@ public:
     for(const Arc& arc: outGoingArcs) {
 
       D(std::println("Arc {} is leaving from {}",arc.id, id);)
-      // Because we are iteratong over transitions and looking at arcs that 
+      // Because we are iterating over transitions and looking at arcs that 
       // leave me I know that arc.endID refers to a place
       auto l = places.at(arc.endID).getLabel();
       auto t = places.at(arc.endID).getTokens();
       D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
       outgoingTokens.push_back(t);
     }
-    // NRVO is madated by C++17
+    // NRVO is mandated by C++17
     return outgoingTokens;
   }
 
@@ -332,14 +369,14 @@ public:
     auto incomingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: inComingArcs) {
       D(std::println("Arc {} coming into {}",arc.id, id);)
-      // Because we are iteratong over transitions and looking at arcs that 
+      // Because we are iterating over transitions and looking at arcs that 
       // coming in to me I know that arc.startID refers to a place
-      auto l = places.at(arc.startID).getLabel();
-      auto t = places.at(arc.startID).getTokens();
+      D(const auto& l = places.at(arc.startID).getLabel(););
+      const auto& t = places.at(arc.startID).getTokens();
       D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
       incomingTokens.push_back(t);
     }
-    // NRVO is madated by C++17
+    // NRVO is mandated by C++17
     return incomingTokens;
   }
 
@@ -348,10 +385,12 @@ public:
   TH(void saveTokenHistory(const std::filesystem::path& path);)
   RAC(void saveReactionActivityCount(const std::filesystem::path& path);)
   RAH(void saveReactionActivityHistory(const std::filesystem::path& path);)
+  BBC(void saveBlockedByCount(const std::filesystem::path& path);)
+  
 #endif
 private: 
   //TODO Make one map that contains transition and place that. 
-  //Each elements carreis is typer as an enum
+  //Each elements carries is type as an enum
   std::unordered_map<ID, Place> places;
   std::unordered_map<ID, Transition> transitions;
   std::unordered_map<ID, Arc> arcs;
@@ -362,6 +401,7 @@ private:
   TH(std::unordered_map<std::string, std::vector<std::size_t>> tokenHistory;)
   RAC(std::unordered_map<std::string, std::size_t> reactionActivity;)
   RAH(std::unordered_map<std::string, std::vector<bool>> reactionActivityHistory;)
+  BBC(std::unordered_map<std::string, std::unordered_map<std::string, std::size_t>> blockedByCount;)
 #endif
 };
 

@@ -141,5 +141,18 @@ namespace petrinet {
 
   }
 #endif
+#ifdef BLOCKED_BY_COUNT
+  void PetriNet::saveBlockedByCount(const std::filesystem::path& path) {
+    json j;
+    j = blockedByCount;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
+
+  }
+#endif
 #endif
 }

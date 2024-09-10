@@ -9,11 +9,12 @@ int run(int argc, char** argv) {
   petrinet::PetriNet p;
   p.loadFromJSON(filepath);
 
-  p.simulateNShuffe(1'000'000);
+  p.simulateNShuffe(10'000);
   //p.toDot("test.dot");
   p.saveFinalTokenCount("FTC.json");
   p.saveTokenHistory("TH.json");
   p.saveReactionActivityCount("RAC.json");
   p.saveReactionActivityHistory("RAH.json");
+  p.saveBlockedByCount("BBC.json");
   return 0;
 }
