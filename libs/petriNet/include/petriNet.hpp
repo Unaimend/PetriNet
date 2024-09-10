@@ -234,6 +234,7 @@ public:
       auto incomingTokens = getIncomingTokens(inComingArcs);
       //TODO I dont need the min I just hae to check that 0 is not in there
       auto minIncToken = std::min_element(incomingTokens.begin(), incomingTokens.end());
+      auto minIncToken = std::ranges::min_element(incomingTokens);
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
