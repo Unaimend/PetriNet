@@ -275,9 +275,8 @@ public:
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
-
       D(std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";)
-      if(*minIncToken > 0 && incSum > outSum) {
+      if(!incomingTokens.empty() && *minIncToken > 0 && incSum > outSum) {
         M(const auto label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
         RAH(reactionActivityHistory[label].push_back(true);)
