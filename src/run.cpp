@@ -9,7 +9,7 @@ int run(int argc, char** argv) {
   petrinet::PetriNet p;
   p.loadFromJSON(filepath);
 
-  p.simulateNShuffe(10'000);
+  p.simulateNShuffe(100);
   //p.toDot("test.dot");
   p.saveFinalTokenCount("FTC.json");
   p.saveTokenHistory("TH.json");

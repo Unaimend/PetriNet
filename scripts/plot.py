@@ -6,12 +6,20 @@ with open('TH.json') as f:
 
 print(d.keys())
 #d = {"ATP": d["ATP"]}
+C = 100
 
 # Create scatter plots for each key
-for key, y_values in d.items():
-    y_values = y_values[0:3000]
+colors = plt.get_cmap('tab20', 20)
+
+# Create scatter plots for each key
+for i, (key, y_values) in enumerate(d.items()):
+    if key == "13dpg_c":
+        continue  # Skip this key if needed
+    y_values = y_values[0:C]
     x_values = range(len(y_values))  # Use the index as the x-values
-    plt.scatter(x_values, y_values, label=key)
+
+    # Use a different color from the palette for each key
+    plt.scatter(x_values, y_values,  label=key, color=colors(i % 20), s=10)
 
 # Add labels and legend
 plt.xlabel('Index (x-axis)')
@@ -24,7 +32,6 @@ plt.show()
 bools = None
 with open('RAH.json') as f:
   bools = json.load(f)
-C = 1000
 print(bools.keys())
 # Corresponding time or index values (x-axis)
 x = range(len(bools[list(bools.keys())[0]]))
