@@ -66,8 +66,25 @@
 #endif
 
 
-
+// TODO CHECK SIZER AND ORDER OF MEMBERS
 void helloFromLib();
+template <typename T>
+void printVector(const std::vector<T>& vec) {
+    std::cout << "Vector elements: ";
+    for (const T& elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+}
+
+template <typename K, typename V>
+void printUnorderedMap(const std::unordered_map<K, V>& umap) {
+    std::cout << "Unordered Map elements: " << std::endl;
+    for (const auto& pair : umap) {
+        std::cout << pair.first << " : " << pair.second.getLabel() << std::endl;
+    }
+}
+
 namespace petrinet { 
 using ID = std::size_t;
 
@@ -214,7 +231,7 @@ public:
   inline void simulateNShuffe(int N) {
     while((N--) != 0) {
       if(N % 100) {
-        std::cout << N << '\n';
+        std::cout << "Iteration " << N << '\n';
       }
       simulateSingleGradient();
 #if defined(METRICS) 
@@ -231,13 +248,15 @@ public:
     // Vector to store the keys
     // TODO Preallocate the right capacity
     std::vector<std::size_t> keys;
-
+  
     // Iterate over the map and store keys
     for (const auto& pair : transitions) {
         keys.push_back(pair.first);
     }
-
+  
     std::ranges::shuffle(keys, gen);
+    
+
 
     for (const auto& id : keys) {
       // Go over each possible transition and
@@ -277,7 +296,7 @@ public:
 
       D(std::cout << *minIncToken << " " << incSum << " " << outSum << "\n";)
       if(!incomingTokens.empty() && *minIncToken > 0 && incSum > outSum) {
-        M(const auto label = transitions.at(id).getLabel();)
+        M(const auto& label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
         RAH(reactionActivityHistory[label].push_back(true);)
         D(std::println("{} has fired", id);)
@@ -289,6 +308,15 @@ public:
         for(const Arc& arc: inComingArcs) {
           auto t = places.at(arc.startID).getTokens();
           places.at(arc.startID).setTokens(t -1);
+        }
+      } else if(inComingArcs.empty() && !outGoingArcs.empty()) {
+        M(const auto& label = transitions.at(id).getLabel();)
+        RAC(reactionActivity[label]++;)
+        RAH(reactionActivityHistory[label].push_back(true);)
+        D(std::println("{} has fired", id);)
+        for(const Arc& arc: outGoingArcs) {
+          auto t = places.at(arc.endID).getTokens();
+          places.at(arc.endID).setTokens(t+1);
         }
       } else {
         RAH(reactionActivityHistory[transitions.at(id).getLabel()].push_back(false);)
