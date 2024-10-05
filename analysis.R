@@ -62,7 +62,8 @@ ui <- navbarPage("My Application",
                         sidebarPanel(
                           fluidPage(
                             selectInput("metabolite2", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c"),
-                            sliderInput("slider2", "Max x value:",  min = 100, max = 1000, value = 500)
+                            selectInput("item2", "Select a run:",  choices = c(1:length(load_data2()), "all"), selected = "all"),
+                            sliderInput("slider2", "Max x value:",  min = 100, max = 1000, value = 1000)
                             
                           ),
                         ),
@@ -79,10 +80,16 @@ ui <- navbarPage("My Application",
 server <- function(input, output) {
   # Load data once when the app starts
   data <- load_data()
-  data2 <- as.data.frame(load_data2()[[1]], check.names = FALSE)
-  print(data2)
-
-  
+  d <- load_data2()
+  data2 <- data.frame(metabolite = character(), concentration = numeric(), item = factor())
+  for(i in 1:12){ 
+    data_temp <- as.data.frame(d[[i]], check.names = FALSE)
+    df_plot <- pivot_longer(data_temp ,names_to = "metabolite", values_to = "concentration", cols = everything())
+    df_plot$item <- as.factor(i)
+    data2 <- rbind(data2, df_plot)
+  }
+  print(nrow(data2))
+  print(unique(data2$item))
   output$barPlot <- renderPlot({
     selected_metabolite <- input$metabolite
     df_plot <- pivot_longer(as.data.frame(data), names_to = "metabolite", values_to = "concentration", cols = everything())
@@ -98,19 +105,23 @@ server <- function(input, output) {
 
   output$scatterPlot<- renderPlot({
     selected_metabolite <- input$metabolite2
-    print(selected_metabolite)
-    df_plot <- pivot_longer(data2,names_to = "metabolite", values_to = "concentration", cols = everything())
-    df_plot <- df_plot %>% group_by(metabolite) %>%
+    selected_run <- input$item2
+    df_plot <- filter(data2, metabolite == selected_metabolite)
+    df_plot <- df_plot %>% group_by(item) %>%
        mutate(rank = row_number()) %>%
        ungroup()
-    df_plot <- filter(df_plot, metabolite == selected_metabolite)
+
+    if(selected_run != "all"){
+      df_plot <- filter(df_plot, item == selected_run)
+    }
+
     df_plot <- filter(df_plot, rank < input$slider2)
     df_plot$concentration <- as.numeric(df_plot$concentration)
     # Plot the selected metabolite across all 10 files
-    ggplot(df_plot, aes(x = c(1:nrow(df_plot)), y = concentration, color = metabolite)) +
+    ggplot(df_plot, aes(y = concentration, x = rank, color = item)) +
       geom_point() +
       labs(x = "File", y = "Concentration", 
-           title = paste("Concentration of", selected_metabolite)) +
+           title = paste("Concentration of", selected_metabolite, "of run", selected_run)) +
       theme_minimal()
   })
 

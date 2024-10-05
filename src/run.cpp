@@ -5,7 +5,7 @@
 #include <future>
 #include <format>
 const int THREADS = 12;
-const int AMOUNT_OF_RUNS = 500;
+const int AMOUNT_OF_RUNS = 1000;
 
 petrinet::PetriNet* executeRun(const std::filesystem::path& filepath) {
   auto* p = new petrinet::PetriNet();
