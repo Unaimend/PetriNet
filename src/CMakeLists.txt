@@ -12,7 +12,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 set(CMAKE_BUILD_TYPE Debug)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -O0)
+  add_compile_options(-pthread -Wall -Wextra -Wpedantic -Wconversion -O0)
 endif()
 # Add an executable target called "baseline"
 
@@ -30,10 +30,10 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
   add_custom_command(TARGET bootstrap PRE_BUILD COMMAND find ${CMAKE_BINARY_DIR} -type f -name '*.gcda' -exec rm {} +)
 endif()
 
-
+find_package(Threads REQUIRED)
 
 add_executable(${TARGET_NAME} main.cpp )
-target_link_libraries(${TARGET_NAME} PUBLIC bootstrap)
+target_link_libraries(${TARGET_NAME} PUBLIC bootstrap ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(bootstrap PUBLIC petriNet)
 
 add_subdirectory(../libs ../libs)
