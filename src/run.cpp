@@ -2,19 +2,38 @@
 #include <filesystem>
 #include "../libs/petriNet/include/petriNet.hpp"
 #include <thread>
+#include <future>
+#include <format>
+const int THREADS = 12;
+const int AMOUNT_OF_RUNS = 1000;
 
-int run(int argc, char** argv) {
+petrinet::PetriNet* executeRun(const std::filesystem::path& filepath) {
+  auto* p = new petrinet::PetriNet();
+  p->loadFromJSON(filepath);
+  p->simulateNShuffe(AMOUNT_OF_RUNS);
+  return p;
+}
+
+int run(int  /*argc*/, char** argv) {
   auto filepath = std::filesystem::path{argv[1]};
 
-  petrinet::PetriNet p;
-  p.loadFromJSON(filepath);
+  std::vector<std::future<petrinet::PetriNet*>> threads;
 
-  p.simulateNShuffe(100);
-  //p.toDot("test.dot");
-  p.saveFinalTokenCount("FTC.json");
-  p.saveTokenHistory("TH.json");
-  p.saveReactionActivityCount("RAC.json");
-  p.saveReactionActivityHistory("RAH.json");
-  p.saveBlockedByCount("BBC.json");
+    // Launch a group of threads
+  for (int i = 0; i < THREADS; ++i) {
+    threads.emplace_back(std::async(std::launch::async, executeRun, filepath));
+  }
+
+  int i = 1;
+  // Join the threads with the main thread
+  for (auto& th : threads) {
+    auto* p = th.get();
+    p->saveFinalTokenCount(std::format("FTC_{}.json", i)); 
+    p->saveReactionActivityCount(std::format("RAC_{}.json", i));
+    p->saveReactionActivityHistory(std::format("RAH_{}.json", i));
+    p->saveTokenHistory(std::format("TH_{}.json", i)); //p.saveTokenHistory("TH.json");
+    i++;
+  }
+
   return 0;
 }

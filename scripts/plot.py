@@ -1,38 +1,58 @@
 import json
 import matplotlib.pyplot as plt
 d = None
-with open('TH.json') as f:
+with open('TH_1.json') as f:
   d = json.load(f)
 
-print(d.keys())
 #d = {"ATP": d["ATP"]}
-C = 100
+C = 200
 
 # Create scatter plots for each key
 colors = plt.get_cmap('tab20', 20)
 
-# Create scatter plots for each key
-for i, (key, y_values) in enumerate(d.items()):
-    if key == "13dpg_c":
-        continue  # Skip this key if needed
-    y_values = y_values[0:C]
-    x_values = range(len(y_values))  # Use the index as the x-values
+def plot_token_history(d, title, cap = None):
+  for i, (key, y_values) in enumerate(d.items()):
+      if key == "13dpg_c":
+         pass 
+      y_values = y_values[0:C]
+      y_values = [cap if cap is not None and y > cap else y for y in y_values]
+      x_values = range(len(y_values))  # Use the index as the x-values
+  
+      # Use a different color from the palette for each key
+      #plt.scatter(x_values, y_values,  label=key, color=colors(i % 20), s=10)
+      plt.plot(x_values, y_values, label=key, color=colors(i % 20), linestyle='-')
+  
+  # Add labels and legend
+  plt.xlabel('Index (x-axis)')
+  plt.ylabel('Values (y-axis)')
+  plt.legend()
+  plt.title(title)
+  plt.show()
 
-    # Use a different color from the palette for each key
-    plt.scatter(x_values, y_values,  label=key, color=colors(i % 20), s=10)
 
-# Add labels and legend
-plt.xlabel('Index (x-axis)')
-plt.ylabel('Values (y-axis)')
-plt.legend()
-plt.title('Scatter Plot for Each Group')
-plt.show()
 
+
+plot_token_history(d, "All metabolites", cap = 20)
+
+decresing_metabolites = {k: v for k, v in d.items() if v[0] > v[len(v) - 1] }
+plot_token_history(decresing_metabolites, "Decreasing Metabolites")
+
+
+increasing_metabolites = {k: v for k, v in d.items() if v[0] < v[len(v) - 1] }
+plot_token_history(increasing_metabolites, "Increasing Metabolites")
+
+
+def plot_zero_at_t(d, t):
+  return {k: v for k, v in d.items() if v[t] == -1 }
+  
+
+z = plot_zero_at_t(d, C-1)
+print(z.keys())
+plot_token_history(z, f'Zero at {C-1}')
 
 bools = None
-with open('RAH.json') as f:
+with open('RAH_1.json') as f:
   bools = json.load(f)
-print(bools.keys())
 # Corresponding time or index values (x-axis)
 x = range(len(bools[list(bools.keys())[0]]))
 x = x[0:C]
