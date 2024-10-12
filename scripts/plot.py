@@ -59,15 +59,18 @@ x = x[0:C]
 # Create the figure
 
 fig, axs = plt.subplots(len(bools), 1, sharex=True, figsize=(6, 6))
-
+c = 0
 # Plot each boolean vector in its own subplot
 for i, (key, vec) in enumerate(bools.items()):
-    axs[i].plot(x[0:C], vec[0:C], label=key)
-    axs[i].set_ylabel(key)
-    axs[i].set_ylim(-0.2, 1.2)  # Adjust y-limits for boolean data (True/False)
-    axs[i].set_ylabel('abc', rotation='horizontal', fontsize=20, labelpad=20)
-    axs[i].tick_params(axis='y')
-    axs[i].legend(loc='upper right')
+  axs[i].plot(x[0:C], vec[0:C], label=key)
+  axs[i].set_ylabel(key)
+  axs[i].set_ylim(-0.2, 1.2)  # Adjust y-limits for boolean data (True/False)
+  axs[i].set_ylabel('abc', rotation='horizontal', fontsize=20, labelpad=20)
+  axs[i].tick_params(axis='y')
+  axs[i].legend(loc='upper right')
+  if(c == 5):
+    break
+  c += 1
 
 # Set common x-label
 axs[-1].set_xlabel('Index')
