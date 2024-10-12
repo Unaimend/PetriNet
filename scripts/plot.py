@@ -1,5 +1,6 @@
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 d = None
 with open('TH_1.json') as f:
   d = json.load(f)
@@ -30,47 +31,49 @@ def plot_token_history(d, title, cap = None):
   plt.show()
 
 
+#
+#plot_token_history(d, "All metabolites", cap = 20)
+#
+#decresing_metabolites = {k: v for k, v in d.items() if v[0] > v[len(v) - 1] }
+#plot_token_history(decresing_metabolites, "Decreasing Metabolites")
+#
+#
+#increasing_metabolites = {k: v for k, v in d.items() if v[0] < v[len(v) - 1] }
+#plot_token_history(increasing_metabolites, "Increasing Metabolites")
 
 
-plot_token_history(d, "All metabolites", cap = 20)
-
-decresing_metabolites = {k: v for k, v in d.items() if v[0] > v[len(v) - 1] }
-plot_token_history(decresing_metabolites, "Decreasing Metabolites")
-
-
-increasing_metabolites = {k: v for k, v in d.items() if v[0] < v[len(v) - 1] }
-plot_token_history(increasing_metabolites, "Increasing Metabolites")
-
-
-def plot_zero_at_t(d, t):
-  return {k: v for k, v in d.items() if v[t] == -1 }
-  
-
-z = plot_zero_at_t(d, C-1)
-print(z.keys())
-plot_token_history(z, f'Zero at {C-1}')
+#def plot_zero_at_t(d, t):
+#  return {k: v for k, v in d.items() if v[t] == 0 }
+#  
+##
+#z = plot_zero_at_t(d, C-1)
+#print(z.keys())
+#plot_token_history(z, f'Zero at {C-1}')
 
 bools = None
 with open('RAH_1.json') as f:
   bools = json.load(f)
+
 # Corresponding time or index values (x-axis)
 x = range(len(bools[list(bools.keys())[0]]))
 x = x[0:C]
 # Create the figure
-
-fig, axs = plt.subplots(len(bools), 1, sharex=True, figsize=(6, 6))
+X = len(bools) - 30
+fig, axs = plt.subplots(X, 1, sharex=True, figsize=(6, 6))
 c = 0
 # Plot each boolean vector in its own subplot
 for i, (key, vec) in enumerate(bools.items()):
-  axs[i].plot(x[0:C], vec[0:C], label=key)
+  c += 1
+  if c == X:
+    break
+  v2 = list(map(int, vec[0:C]))
+  vec2 = pd.DataFrame(v2).rolling(window=30).sum()
+  axs[i].plot(x[0:C], vec2[0:C], label=key)
   axs[i].set_ylabel(key)
-  axs[i].set_ylim(-0.2, 1.2)  # Adjust y-limits for boolean data (True/False)
-  axs[i].set_ylabel('abc', rotation='horizontal', fontsize=20, labelpad=20)
+  #axs[i].set_ylim(-0.2, 1.2)  # Adjust y-limits for boolean data (True/False)
+  axs[i].set_ylabel('', rotation='horizontal', fontsize=20, labelpad=20)
   axs[i].tick_params(axis='y')
   axs[i].legend(loc='upper right')
-  if(c == 5):
-    break
-  c += 1
 
 # Set common x-label
 axs[-1].set_xlabel('Index')
