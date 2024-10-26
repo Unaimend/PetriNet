@@ -232,15 +232,16 @@ public:
     while((N--) != 0) {
       if(N % 100) {
         std::cout << "Iteration " << N << '\n';
-      }
-      simulateSingleGradient();
+      //}
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
+        D(std::println("Place {} tokens {}", place.getLabel(), place.getTokens()));
         tokenHistory[place.getLabel()].push_back(place.getTokens());
       }
 #endif
 #endif
+      simulateSingleGradient();
     }
   }
 
