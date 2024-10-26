@@ -32,6 +32,9 @@ jobs:
     - name: Activate conda
       shell: bash -el {0}
       run: conda info
+    - name: List conda
+      shell: bash -el {0}
+      run: conda list
 
 
 
