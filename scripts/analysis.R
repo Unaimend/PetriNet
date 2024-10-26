@@ -7,14 +7,14 @@ THREADS <- 1
 # Function to read the JSON files and combine them into a data frame
 load_data <- function() {
   data_list <- list()
-  
+
   # Loop through your 10 JSON files and read them into a list
   for (i in 1:THREADS) {
     file_name <- paste0("FTC_", i, ".json")
     data <- fromJSON(file_name)
     data_list[[i]] <- data
   }
-  
+
   # Combine the data into a data frame
   df <- do.call(rbind, data_list)
   return(df)
@@ -23,14 +23,14 @@ load_data <- function() {
 
 load_data2 <- function() {
   data_list <- list()
-  
+
   # Loop through your 10 JSON files and read them into a list
   for (i in 1:THREADS) {
     file_name <- paste0("TH_", i, ".json")
     data <- fromJSON(file_name)
     data_list[[i]] <- data
   }
-  
+
   # Combine the data into a data frame
   return(data_list)
 }
@@ -38,45 +38,45 @@ load_data2 <- function() {
 
 # Shiny app
 
-ui <- navbarPage("My Application", 
-                 tabPanel("Metabolite Distribution",
-                    fluidPage(
-                     useShinyjs(),
-                      titlePanel("Metabolite Visualization"),
-                      sidebarLayout(
-                        sidebarPanel(
-                          fluidPage(
-                            selectInput("metabolite", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c")),
-                          ),
-                          mainPanel(
-                           fluidPage(
-                             plotOutput("barPlot")
-                            )
-                          )
-                        )
-                      )
-                    ),
-                 tabPanel("Metabolite History",
-                     useShinyjs(),
-                      titlePanel("Metabolite Visualization"),
-                      sidebarLayout(
-                        sidebarPanel(
-                          fluidPage(
-                            selectInput("metabolite2", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c"),
-                            selectInput("item2", "Select a run:",  choices = c(1:length(load_data2()), "all"), selected = "all"),
-                            sliderInput("slider2", "Max x value:",  min = 100, max = 1000, value = 1000)
-                            
-                          ),
-                        ),
-                        mainPanel(
-                         fluidPage(
-                           plotOutput("scatterPlot")
-                          )
-                        )
-                      )
-                    ),
-                 tabPanel("Component 2")
-)
+ui <-
+  navbarPage("My Application",
+    tabPanel("Metabolite Distribution",
+      fluidPage(
+        useShinyjs(),
+        titlePanel("Metabolite Visualization"),
+        sidebarLayout(
+          sidebarPanel(
+            fluidPage(
+              selectInput("metabolite", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c")),
+          ),
+          mainPanel(
+            fluidPage(
+              plotOutput("barPlot")
+            )
+          )
+        )
+      )
+    ),
+    tabPanel("Metabolite History",
+      useShinyjs(),
+      titlePanel("Metabolite Visualization"),
+      sidebarLayout(
+        sidebarPanel(
+          fluidPage(
+            selectInput("metabolite2", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c"),
+            selectInput("item2", "Select a run:",  choices = c(1:length(load_data2()), "all"), selected = "all"),
+            sliderInput("slider2", "Max x value:",  min = 100, max = 1000, value = 1000)
+          ),
+        ),
+        mainPanel(
+          fluidPage(
+            plotOutput("scatterPlot")
+          )
+        )
+      )
+    ),
+    tabPanel("Component 2")
+  )
 
 server <- function(input, output) {
   # Load data once when the app starts

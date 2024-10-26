@@ -2,7 +2,7 @@
 #include "../libs/petriNet/include/petriNet.hpp"
 #include <future>
 const int THREADS = 1;
-const int AMOUNT_OF_RUNS = 20;
+const int AMOUNT_OF_RUNS = 50;
 
 petrinet::PetriNet* executeRun(const std::filesystem::path& filepath) {
   auto* p = new petrinet::PetriNet();
