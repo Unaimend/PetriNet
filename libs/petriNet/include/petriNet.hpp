@@ -5,10 +5,7 @@
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
 #include <cstddef>
-#include <iterator>
-#include <map>
 #include <unordered_map>
-#include "../include/json.hpp"
 #include <iostream>
 #include <ranges>
 #include <numeric>
@@ -236,7 +233,7 @@ public:
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
-        D(std::println("Place {} tokens {}", place.getLabel(), place.getTokens()));
+        D(std::println("Place {} contains tokens {} at iteration {}", place.getID(), place.getTokens(), N));
         tokenHistory[place.getLabel()].push_back(place.getTokens());
       }
 #endif
@@ -245,20 +242,7 @@ public:
     }
   }
 
-  inline void simulateSingleGradient() {
-    // Vector to store the keys
-    // TODO Preallocate the right capacity
-    std::vector<std::size_t> keys;
-  
-    // Iterate over the map and store keys
-    for (const auto& pair : transitions) {
-        keys.push_back(pair.first);
-    }
-  
-    std::ranges::shuffle(keys, gen);
-    
-
-
+  inline void simulateGivenRxns(const std::vector<ID>& keys) {
     for (const auto& id : keys) {
       // Go over each possible transition and
       // collect outgoing and incoming arcs for that id
@@ -327,6 +311,26 @@ public:
     }
   }
 
+  inline void simulateSingleGradient() {
+    // Vector to store the keys
+    // TODO Preallocate the right capacity
+    std::vector<ID> keys;
+  
+    // Iterate over the map and store keys
+    for (const auto& pair : transitions) {
+        keys.push_back(pair.first);
+    }
+    
+    std::ranges::shuffle(keys, gen);
+
+    simulateGivenRxns(keys);
+    
+  }
+
+  void setTokens(ID id, std::size_t tokens) {
+    places.at(id).setTokens(tokens);
+  }
+
 
   std::vector<Arc> getInComingArcs(ID id_) {
     std::vector<Arc> inComingArcs;
@@ -382,12 +386,12 @@ public:
     auto outgoingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: outGoingArcs) {
 
-      D(std::println("Arc {} is leaving from {}",arc.id, id);)
+      //D(std::println("Arc {} is leaving from {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // leave me I know that arc.endID refers to a place
       auto l = places.at(arc.endID).getLabel();
       auto t = places.at(arc.endID).getTokens();
-      D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
+      //D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
       outgoingTokens.push_back(t);
     }
     // NRVO is mandated by C++17
@@ -398,12 +402,12 @@ public:
   std::vector<std::size_t> getIncomingTokens(const std::vector<Arc>& inComingArcs) {
     auto incomingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: inComingArcs) {
-      D(std::println("Arc {} coming into {}",arc.id, id);)
+      //D(std::println("Arc {} coming into {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // coming in to me I know that arc.startID refers to a place
       D(const auto& l = places.at(arc.startID).getLabel(););
       const auto& t = places.at(arc.startID).getTokens();
-      D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
+      //D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
       incomingTokens.push_back(t);
     }
     // NRVO is mandated by C++17
