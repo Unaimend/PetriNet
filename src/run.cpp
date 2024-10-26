@@ -1,11 +1,8 @@
-#include <iostream>
 #include <filesystem>
 #include "../libs/petriNet/include/petriNet.hpp"
-#include <thread>
 #include <future>
-#include <format>
-const int THREADS = 12;
-const int AMOUNT_OF_RUNS = 1000;
+const int THREADS = 1;
+const int AMOUNT_OF_RUNS = 20;
 
 petrinet::PetriNet* executeRun(const std::filesystem::path& filepath) {
   auto* p = new petrinet::PetriNet();
