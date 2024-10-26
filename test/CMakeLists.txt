@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 
 # AFAIK this should not be necessary, setting it in the main cmakelist file should be enough
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS False)
 

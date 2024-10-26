@@ -232,7 +232,7 @@ public:
     while((N--) != 0) {
       if(N % 100) {
         std::cout << "Iteration " << N << '\n';
-      //}
+      }
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
