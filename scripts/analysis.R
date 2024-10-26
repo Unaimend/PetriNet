@@ -3,8 +3,9 @@ library(shinyjs)
 library(jsonlite)
 library(ggplot2)
 library(tidyverse)
+library(dplyr)
 THREADS <- 1
-# Function to read the JSON files and combine them into a data frame
+# Func tion to read the JSON files and combine them into a data frame
 load_data <- function() {
   data_list <- list()
 
@@ -63,9 +64,12 @@ ui <-
       sidebarLayout(
         sidebarPanel(
           fluidPage(
-            selectInput("metabolite2", "Select a Metabolite:",  choices = colnames(load_data()), selected = "13dpg_c"),
-            selectInput("item2", "Select a run:",  choices = c(1:length(load_data2()), "all"), selected = "all"),
-            sliderInput("slider2", "Max x value:",  min = 100, max = 1000, value = 1000)
+            selectInput("metabolite2", "Select a Metabolite:",
+                        choices = c(colnames(load_data()), "all"), selected = "13dpg_c", multiple = TRUE), # nolint: line_length_linter.
+            selectInput("item2", "Select a run:",
+                        choices = c(1:length(load_data2()), "all"), selected = "all"), # nolint: line_length_linter.
+            sliderInput("slider2", "Max x value:",
+                        min = 100, max = 1000, value = 1000)
           ),
         ),
         mainPanel(
@@ -75,7 +79,6 @@ ui <-
         )
       )
     ),
-    tabPanel("Component 2")
   )
 
 server <- function(input, output) {
@@ -99,30 +102,41 @@ server <- function(input, output) {
     # Plot the selected metabolite across all 10 files
     ggplot(df_plot, aes(x = metabolite, y = concentration)) +
       geom_boxplot() +
-      labs(x = "File", y = "Concentration", 
+      labs(x = "File", y = "Concentration",
            title = paste("Concentration of", selected_metabolite)) +
       theme_minimal()
   })
 
-  output$scatterPlot<- renderPlot({
+  output$scatterPlot <- renderPlot({
     selected_metabolite <- input$metabolite2
+    if (selected_metabolite != "all") {
+      df_plot <- filter(data2, metabolite %in% selected_metabolite)
+    } else {
+      df_plot <- data2
+    }
     selected_run <- input$item2
-    df_plot <- filter(data2, metabolite == selected_metabolite)
-    df_plot <- df_plot %>% group_by(item) %>%
-       mutate(rank = row_number()) %>%
-       ungroup()
-
-    if(selected_run != "all"){
-      df_plot <- filter(df_plot, item == selected_run)
+    df_plot <- df_plot %>%
+      group_by(item) %>% # nolint: object_usage_linter.
+      mutate(rank = row_number()) %>%
+      ungroup()
+    print(head(df_plot))
+    if (selected_run != "all") {
+      df_plot <- filter(df_plot, item == selected_run) # nolint
     }
 
     df_plot <- filter(df_plot, rank < input$slider2)
     df_plot$concentration <- as.numeric(df_plot$concentration)
     # Plot the selected metabolite across all 10 files
-    ggplot(df_plot, aes(y = concentration, x = rank, color = item)) +
+    if (selected_run != "all") {
+      p <-  ggplot(df_plot, aes(y = concentration, x = rank, color = metabolite))
+    } else {
+      p <- ggplot(df_plot, aes(y = concentration, x = rank, color = item))
+    }
+    p +
       geom_point() +
-      labs(x = "File", y = "Concentration", 
-           title = paste("Concentration of", selected_metabolite, "of run", selected_run)) +
+      labs(x = "File", y = "Concentration",
+           title = paste("Concentration of",
+                         selected_metabolite, "of run", selected_run)) +
       theme_minimal()
   })
 

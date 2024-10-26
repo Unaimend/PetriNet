@@ -13,7 +13,7 @@
 1. Execute the plot script 
     `python3 scripts/plot.py`
 2. Execute the analysis script
-    `R analysis.R`
+    `Rscript analysis.R`
 
 
 
