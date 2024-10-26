@@ -3,12 +3,13 @@ library(shinyjs)
 library(jsonlite)
 library(ggplot2)
 library(tidyverse)
+THREADS <- 1
 # Function to read the JSON files and combine them into a data frame
 load_data <- function() {
   data_list <- list()
   
   # Loop through your 10 JSON files and read them into a list
-  for (i in 1:12) {
+  for (i in 1:THREADS) {
     file_name <- paste0("FTC_", i, ".json")
     data <- fromJSON(file_name)
     data_list[[i]] <- data
@@ -24,7 +25,7 @@ load_data2 <- function() {
   data_list <- list()
   
   # Loop through your 10 JSON files and read them into a list
-  for (i in 1:12) {
+  for (i in 1:THREADS) {
     file_name <- paste0("TH_", i, ".json")
     data <- fromJSON(file_name)
     data_list[[i]] <- data
@@ -82,7 +83,7 @@ server <- function(input, output) {
   data <- load_data()
   d <- load_data2()
   data2 <- data.frame(metabolite = character(), concentration = numeric(), item = factor())
-  for(i in 1:12){ 
+  for(i in 1:THREADS){ 
     data_temp <- as.data.frame(d[[i]], check.names = FALSE)
     df_plot <- pivot_longer(data_temp ,names_to = "metabolite", values_to = "concentration", cols = everything())
     df_plot$item <- as.factor(i)
