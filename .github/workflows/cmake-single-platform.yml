@@ -35,6 +35,9 @@ jobs:
     - name: List conda
       shell: bash -el {0}
       run: conda list
+    - name: Compile program
+      shell: bash -el {0}
+      run: sh compile.sh
 
 
 
