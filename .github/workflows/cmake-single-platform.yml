@@ -4,7 +4,7 @@ name: CMake on a single platform
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "workflow-branch" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -24,12 +24,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v3 
-      with: 
+      with:   
+        auto-update-conda: true
+        activate-environment: myenv 
         environment-file: environment.yml
         auto-activate-base: false
     - name: Activate conda
       shell: bash -el {0}
       run: conda info
+    - name: List conda
+      shell: bash -el {0}
+      run: conda list
+    - name: Compile program
+      shell: bash -el {0}
+      run: sh compile.sh
+    - name: Ls
+      shell: bash -el {0}
+      run: ls
+    - name: Run test
+      shell: bash -el {0}
+      run: sh test.sh
 
 
 
