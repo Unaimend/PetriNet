@@ -310,7 +310,8 @@ public:
           auto t = places.at(arc.startID).getTokens();
           places.at(arc.startID).setTokens(t -1);
         }
-      } else if(inComingArcs.empty() && !outGoingArcs.empty()) {
+      } // This enables the infinit generation of tokens from Exchanve reactions
+      /* else if(inComingArcs.empty() && !outGoingArcs.empty()) {
         M(const auto& label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
         RAH(reactionActivityHistory[label].push_back(true);)
@@ -319,7 +320,8 @@ public:
           auto t = places.at(arc.endID).getTokens();
           places.at(arc.endID).setTokens(t+1);
         }
-      } else {
+      } */ 
+      else {
         RAH(reactionActivityHistory[transitions.at(id).getLabel()].push_back(false);)
       }
     }
