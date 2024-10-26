@@ -43,7 +43,7 @@ jobs:
       run: ls
     - name: Run test
       shell: bash -el {0}
-      run: ./Build/test/simple_tests
+      run: sh test.sh
 
 
 
