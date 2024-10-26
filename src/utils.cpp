@@ -1,5 +1,7 @@
 #include "utils.hpp"
-
+#include "../libs/petriNet/include/json.hpp"
+#include "fstream"
+#include "iostream"
 // Convert JSON to MyClass
 static void from_json(const nlohmann::json &j, Config& myClass) {
     j.at("threads").get_to(myClass.threads);
