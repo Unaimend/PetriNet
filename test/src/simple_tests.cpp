@@ -72,4 +72,16 @@ int main() {
     expect(p.getPlaces().at(0).getTokens() == 5);
     expect(p.getPlaces().at(5).getTokens() == 5);
   };
+
+  "Sink reaction"_test = [] {
+    petrinet::PetriNet p;
+    p.loadFromJSON("../../test/examples/loading/pump.json");
+    expect(p.getPlaces().size() == 1);
+    expect(p.getTransitions().size() == 1);
+    expect(p.getArcs().size() == 1);
+
+    p.simulateGivenRxns({1, 1, 1, 1});
+     
+    expect(p.getPlaces().at(0).getTokens() == 4);
+  };
 }

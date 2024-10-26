@@ -1,0 +1,54 @@
+{
+  "counter": 5,
+  "shapes": [
+    {
+      "id": 0,
+      "x": 253,
+      "y": 429,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": true,
+      "arcEnd": false,
+      "arcIDS": [
+        3
+      ],
+      "hidden": false,
+      "radius": 10,
+      "type": "Circle",
+      "tokens": 4
+    },
+    {
+      "id": 1,
+      "x": 385,
+      "y": 423,
+      "label": "PumpRxn",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": true,
+      "arcIDS": [
+        3
+      ],
+      "hidden": false,
+      "width": 20,
+      "height": 50,
+      "type": "Rectangle",
+      "canFire": false
+    },
+    {
+      "id": 3,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": false,
+      "arcIDS": [],
+      "hidden": false,
+      "startID": 0,
+      "endID": 1,
+      "type": "Arc",
+      "edgeWeight": 1
+    }
+  ]
+}
