@@ -38,6 +38,9 @@ jobs:
     - name: Compile program
       shell: bash -el {0}
       run: sh compile.sh
+    - name: Ls
+      shell: bash -el {0}
+      run: ls
     - name: Run test
       shell: bash -el {0}
       run: ./simple_tests
