@@ -22,6 +22,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v3 
+      with: 
+        environment-file: environment.yml
+        auto-activate-base: false
     - name: Activate conda
       shell: bash -el {0}
       run: conda info
