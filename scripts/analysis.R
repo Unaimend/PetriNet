@@ -92,12 +92,9 @@ server <- function(input, output) {
     df_plot$item <- as.factor(i)
     data2 <- rbind(data2, df_plot)
   }
-  print(nrow(data2))
-  print(unique(data2$item))
   output$barPlot <- renderPlot({
     selected_metabolite <- input$metabolite
-    df_plot <- pivot_longer(as.data.frame(data), names_to = "metabolite", values_to = "concentration", cols = everything())
-    df_plot <- filter(df_plot, metabolite == selected_metabolite)
+    df_plot <- filter(data2, metabolite == selected_metabolite)
     df_plot$concentration <- as.numeric(df_plot$concentration)
     # Plot the selected metabolite across all 10 files
     ggplot(df_plot, aes(x = metabolite, y = concentration)) +
