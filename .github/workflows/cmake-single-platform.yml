@@ -40,7 +40,7 @@ jobs:
       run: sh compile.sh
     - name: Run test
       shell: bash -el {0}
-      run: ./simple_test
+      run: ./simple_tests
 
 
 
