@@ -21,3 +21,26 @@ Config loadConfig(const std::filesystem::path& p) {
   return c;
 
 }
+
+
+double mean(const std::vector<double>& x) { 
+  return std::accumulate(x.begin(),x.end(), 0.0)/static_cast<double>(x.size());
+}
+
+
+double varianceOpt(const std::vector<double>& x, double mean) {
+  // TODO I think the std math functions are slow as
+  const auto squaredDiffs = x | std::views::transform([mean](double x) {
+      double diff = x - mean;
+      return diff * diff;
+  });
+  return std::accumulate(squaredDiffs.begin(), squaredDiffs.end(), 0.0)/static_cast<double>(x.size());
+}
+
+double stdDevOpt(const std::vector<double>& x, double mean) {
+  // TODO I think the std math functions are slow as
+  auto var = varianceOpt(x, mean);
+  return std::sqrt(var);
+}
+
+

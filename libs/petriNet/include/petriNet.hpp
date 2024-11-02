@@ -4,6 +4,7 @@
 // When doing this it might be good to keep the clases AS SMALL as possible SSO for strings (label member) might be problematic there
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
+#include <cassert>
 #include <cstddef>
 #include <unordered_map>
 #include <iostream>
@@ -15,7 +16,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <print>
-#include <ranges>
+#include "../../../src/utils.hpp"
 #define METRICS
 #define TOKEN_HISTORY
 #define REACTION_ACTIVITY_HISTORY
@@ -65,23 +66,6 @@
 
 // TODO CHECK SIZER AND ORDER OF MEMBERS
 void helloFromLib();
-template <typename T>
-void printVector(const std::vector<T>& vec) {
-    std::cout << "Vector elements: ";
-    for (const T& elem : vec) {
-        std::cout << elem << " ";
-    }
-    std::cout << std::endl;
-}
-
-template <typename K, typename V>
-void printUnorderedMap(const std::unordered_map<K, V>& umap) {
-    std::cout << "Unordered Map elements: " << std::endl;
-    for (const auto& pair : umap) {
-        std::cout << pair.first << " : " << pair.second.getLabel() << std::endl;
-    }
-}
-
 namespace petrinet { 
 using ID = std::size_t;
 
