@@ -1,4 +1,7 @@
 {
-  "threads": 100,
-  "iterations": 100
+  "threads": 1,
+  "mode": "iteration",
+  "iterations": 100,
+  "history_length" : 10,
+  "stdDevThresh": 0.5
 }

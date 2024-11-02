@@ -3,9 +3,19 @@
 #include "fstream"
 #include "iostream"
 // Convert JSON to MyClass
-static void from_json(const nlohmann::json &j, Config& myClass) {
-    j.at("threads").get_to(myClass.threads);
-    j.at("iterations").get_to(myClass.iterations);
+static void from_json(const nlohmann::json &j, Config& config) {
+    j.at("threads").get_to(config.threads);
+    j.at("iterations").get_to(config.iterations);
+    j.at("stdDevThresh").get_to(config.stdDevThresh);
+    j.at("iterations").get_to(config.iterations);
+    if(j.at("mode") == "stopping_criterion") {
+      config.mode = Mode::STOPPING_CRITERION;
+    } else if (j.at("mode") == "iteration") {
+      config.mode = Mode::ITERTATION;
+    } else {
+      throw std::runtime_error(R"(Mode must be "iteration" or "stopping_criterion")");
+    }
+
 }
 
 Config loadConfig(const std::filesystem::path& p) {
@@ -42,5 +52,4 @@ double stdDevOpt(const std::vector<double>& x, double mean) {
   auto var = varianceOpt(x, mean);
   return std::sqrt(var);
 }
-
 

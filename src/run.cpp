@@ -3,10 +3,14 @@
 #include <future>
 #include "utils.hpp"
 
-static petrinet::PetriNet* executeRun(const std::filesystem::path& filepath, int iterations) {
+static petrinet::PetriNet* executeRun(const std::filesystem::path& filepath, const Config& c) {
   auto* p = new petrinet::PetriNet();
   p->loadFromJSON(filepath);
-  p->simulateNShuffe(iterations);
+  if(c.mode == Mode::ITERTATION) {
+    p->simulateNShuffe(c.iterations);
+  } else if (c.mode == Mode::STOPPING_CRITERION) {
+    p->simulateStoppingCritertion(c.historyLength, c.iterations, c.stdDevThresh);
+  }
   return p;
 }
 
@@ -17,7 +21,7 @@ int run(int  /*argc*/, char** argv, const Config& config) {
 
     // Launch a group of threads
   for (int i = 0; i < config.threads; ++i) {
-    threads.emplace_back(std::async(std::launch::async, executeRun, filepath, config.iterations));
+    threads.emplace_back(std::async(std::launch::async, executeRun, filepath, config));
   }
 
   int i = 1;

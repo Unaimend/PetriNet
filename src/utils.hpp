@@ -1,17 +1,28 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <cstdint>
 #include <filesystem>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
 
+enum class Mode {
+  ITERTATION,
+  STOPPING_CRITERION
+};
+
 struct Config {
   Config() = default;
-  Config(int threads, int iterations) :
-    threads{threads}, iterations{iterations} {}
-  int threads;
-  int iterations;
+  Config(int threads, int iterations = 10,
+      uint64_t historyLength = 5, double stdDevThresh = 0.5 ) :
+    threads{threads}, iterations{iterations},  historyLength{historyLength}, stdDevThresh{stdDevThresh} {}
+  int threads{};
+  int iterations{};
+  uint64_t historyLength{};
+  Mode mode = Mode::ITERTATION;
+  double stdDevThresh{};
+
 };
 
 

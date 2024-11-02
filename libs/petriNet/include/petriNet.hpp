@@ -208,12 +208,7 @@ public:
 
   void toDot(const std::filesystem::path& path);
 
-
-  inline void simulateNShuffe(int N) {
-    while((N--) != 0) {
-      if(N % 100) {
-        std::cout << "Iteration " << N << '\n';
-      }
+  void saveHistory() {
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
@@ -222,9 +217,61 @@ public:
       }
 #endif
 #endif
+  }
+
+
+  inline void simulateNShuffe(int N) {
+    while((N--) != 0) {
+      saveHistory();
       simulateSingleGradient();
     }
   }
+
+  void simulateStoppingCritertion (const uint64_t historyLength = 5, const uint64_t hardThresh = 1'000, const double stdDevThresh = 0.5 ) {
+    uint64_t counter = 0;
+    uint64_t iterationCounter = 0;
+    // How often we check if we should stop
+    const uint64_t saveTimepoint = 5;
+    assert(saveTimepoint >= historyLength);
+    bool continueRunning = true;
+    //TODO This should brake aour analysis scripts because runs might be a different length 
+    while(continueRunning) {
+      if (iterationCounter == hardThresh) { 
+        break;
+      }
+      ++iterationCounter;
+      simulateSingleGradient();
+      saveHistory();
+      counter++;
+      if(counter == saveTimepoint) {
+        std::vector<double> cvs;
+        for(const auto& [label, tokens]: tokenHistory) {
+          //TODO Fix or check somehow
+          auto start = tokens.end() - historyLength;
+          auto end = tokens.end();
+          std::vector<double> last_elements(start, end);
+          auto m = mean(last_elements);
+          auto cv = stdDevOpt(last_elements, m);
+          cvs.push_back(cv);
+        }
+        bool change = false;
+        // Iterate over the stddevs for the last five runs of all the metabolites.
+        // If the std dev is greater than 2, we assume there is still change in the metabolism
+        // and stop checking and go to the next tiemstep. If there is not metabolite with a 
+        // stddev > 2 we assume everything is blocked and stop the simulation
+        for(auto cv : cvs) {
+          //TODO This stupid, metabolites might be on totally different scales.
+          if(cv > stdDevThresh) {
+            change = true;
+            break;
+          }              
+        }
+        continueRunning = change;
+        counter = 0;
+      }
+    }
+  }
+
 
   inline void simulateGivenRxns(const std::vector<ID>& keys) {
     for (const auto& id : keys) {

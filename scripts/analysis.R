@@ -4,7 +4,7 @@ library(jsonlite)
 library(ggplot2)
 library(tidyverse)
 library(dplyr)
-THREADS <- 1
+THREADS <- 10
 # Func tion to read the JSON files and combine them into a data frame
 load_data <- function() {
   data_list <- list()
