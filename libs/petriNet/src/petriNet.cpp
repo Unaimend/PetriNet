@@ -50,7 +50,7 @@ namespace petrinet {
         ID edgeWeight = s["edgeWeight"];
         D(std::println("Arc initialized with id {} from {} to {} with weight {}", id, startID, endID, edgeWeight);)
 
-        addArc(id, {id, startID, endID, edgeWeight});
+        addArc(id, {.id=id, .startID=startID, .endID=endID, .edgeWeight=edgeWeight});
       } else {
         std::cerr << "UNK" << std::endl;
       }

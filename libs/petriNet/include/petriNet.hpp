@@ -225,6 +225,7 @@ public:
       saveHistory();
       simulateSingleGradient();
     }
+    saveHistory();
   }
 
   void simulateStoppingCritertion (const uint64_t historyLength = 5, const uint64_t hardThresh = 1'000, const double stdDevThresh = 0.5 ) {
@@ -318,12 +319,12 @@ public:
         D(std::println("{} has fired", id);)
         for(const Arc& arc: outGoingArcs) {
           auto t = places.at(arc.endID).getTokens();
-          places.at(arc.endID).setTokens(t+1);
+          places.at(arc.endID).setTokens(t + arc.edgeWeight);
         }
 
         for(const Arc& arc: inComingArcs) {
           auto t = places.at(arc.startID).getTokens();
-          places.at(arc.startID).setTokens(t -1);
+          places.at(arc.startID).setTokens(t - arc.edgeWeight);
         }
       } // This enables the infinit generation of tokens from Exchanve reactions
       /* else if(inComingArcs.empty() && !outGoingArcs.empty()) {
