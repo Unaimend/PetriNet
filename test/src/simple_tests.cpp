@@ -84,4 +84,16 @@ int main() {
      
     expect(p.getPlaces().at(0).getTokens() == 4);
   };
+
+
+  "Basic stoichiometry"_test = [] {
+    petrinet::PetriNet p;
+    p.loadFromJSON("../../test/examples/loading/stoichiometry.json");
+    expect(p.getPlaces().size() == 2);
+    expect(p.getTransitions().size() == 1);
+    expect(p.getArcs().size() == 2);  
+    p.simulateGivenRxns({14, 14});
+    expect(p.getPlaces().at(0).getTokens() == 6);
+    expect(p.getPlaces().at(10).getTokens() == 6);
+  };
 }
