@@ -1,0 +1,6 @@
+linters: with_defaults(
+  # Set whitespace and line length checks to NULL to disable them
+  whitespace_linter = NULL,
+  line_length_linter = NULL
+)
+
