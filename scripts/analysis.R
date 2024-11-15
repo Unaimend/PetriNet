@@ -100,7 +100,7 @@ server <- function(input, output) {
     selected_metabolite <- input$metabolite
     ggplot(token_history_data %>% filter(metabolite == selected_metabolite), aes(x = metabolite, y = concentration)) +
       geom_boxplot() +
-      labs(x = "File", y = "Concentration",
+      labs(x = "Timepoint", y = "Concentration",
            title = paste("Concentration of", selected_metabolite)) +
       theme_minimal()
   })
@@ -118,7 +118,7 @@ server <- function(input, output) {
       filter(rank < input$slider2) %>%
       ggplot(aes(y = concentration, x = rank, color = if (selected_run != "all") metabolite else run)) +
       geom_point() +
-      labs(x = "File", y = "Concentration",
+      labs(x = "Timepoint", y = "Concentration",
            title = paste("Concentration of",
                          selected_metabolite, "of run", selected_run),
            color = "Run"
