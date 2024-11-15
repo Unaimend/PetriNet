@@ -1,7 +1,7 @@
 {
-  "threads": 2,
-  "mode": "iteration",
-  "iterations": 4,
-  "history_length" : 2,
+  "threads": 5,
+  "mode": "stopping_criterion",
+  "iterations": 4000,
+  "history_length" : 20,
   "stdDevThresh": 0.5
 }

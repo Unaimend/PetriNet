@@ -3,7 +3,8 @@ library(shinyjs)
 library(jsonlite)
 library(ggplot2)
 library(tidyverse)
-THREADS <- 2
+config <- fromJSON("config.json")
+THREADS <- as.numeric(config$threads)
 # Func tion to read the JSON files and combine them into a data frame
 
 load_data_int <- function(prefix) {
@@ -109,11 +110,11 @@ server <- function(input, output) {
     selected_run <- input$item2
     
     token_history_data %>%
-      filter(if(selected_metabolite != "all") metabolite %in% selected_metabolite else TRUE) %>%
+      filter(if("all" %in% selected_metabolite) TRUE else   metabolite %in% selected_metabolite) %>%
       group_by(run) %>%
       mutate(rank = row_number()) %>%
       ungroup() %>%
-      filter(if(selected_run != "all") run == selected_run else TRUE)  %>%
+      filter(if(selected_run == "all") TRUE else run == selected_run)  %>%
       filter(rank < input$slider2) %>%
       ggplot(aes(y = concentration, x = rank, color = if (selected_run != "all") metabolite else run)) +
       geom_point() +
