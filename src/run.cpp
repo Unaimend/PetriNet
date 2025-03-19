@@ -1,24 +1,27 @@
 #include <filesystem>
 #include "../libs/petriNet/include/petriNet.hpp"
 #include <future>
-const int THREADS = 1;
-const int AMOUNT_OF_RUNS = 20;
+#include "utils.hpp"
 
-petrinet::PetriNet* executeRun(const std::filesystem::path& filepath) {
+static petrinet::PetriNet* executeRun(const std::filesystem::path& filepath, const Config& c) {
   auto* p = new petrinet::PetriNet();
   p->loadFromJSON(filepath);
-  p->simulateNShuffe(AMOUNT_OF_RUNS);
+  if(c.mode == Mode::ITERTATION) {
+    p->simulateNShuffe(c.iterations);
+  } else if (c.mode == Mode::STOPPING_CRITERION) {
+    p->simulateStoppingCritertion(c.historyLength, c.iterations, c.stdDevThresh);
+  }
   return p;
 }
 
-int run(int  /*argc*/, char** argv) {
+int run(int  /*argc*/, char** argv, const Config& config) {
   auto filepath = std::filesystem::path{argv[1]};
 
   std::vector<std::future<petrinet::PetriNet*>> threads;
 
     // Launch a group of threads
-  for (int i = 0; i < THREADS; ++i) {
-    threads.emplace_back(std::async(std::launch::async, executeRun, filepath));
+  for (int i = 0; i < config.threads; ++i) {
+    threads.emplace_back(std::async(std::launch::async, executeRun, filepath, config));
   }
 
   int i = 1;

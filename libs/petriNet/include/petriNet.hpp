@@ -4,11 +4,9 @@
 // When doing this it might be good to keep the clases AS SMALL as possible SSO for strings (label member) might be problematic there
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
+#include <cassert>
 #include <cstddef>
-#include <iterator>
-#include <map>
 #include <unordered_map>
-#include "../include/json.hpp"
 #include <iostream>
 #include <ranges>
 #include <numeric>
@@ -18,7 +16,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <print>
-#include <ranges>
+#include "../../../src/utils.hpp"
 #define METRICS
 #define TOKEN_HISTORY
 #define REACTION_ACTIVITY_HISTORY
@@ -68,23 +66,6 @@
 
 // TODO CHECK SIZER AND ORDER OF MEMBERS
 void helloFromLib();
-template <typename T>
-void printVector(const std::vector<T>& vec) {
-    std::cout << "Vector elements: ";
-    for (const T& elem : vec) {
-        std::cout << elem << " ";
-    }
-    std::cout << std::endl;
-}
-
-template <typename K, typename V>
-void printUnorderedMap(const std::unordered_map<K, V>& umap) {
-    std::cout << "Unordered Map elements: " << std::endl;
-    for (const auto& pair : umap) {
-        std::cout << pair.first << " : " << pair.second.getLabel() << std::endl;
-    }
-}
-
 namespace petrinet { 
 using ID = std::size_t;
 
@@ -227,38 +208,73 @@ public:
 
   void toDot(const std::filesystem::path& path);
 
-
-  inline void simulateNShuffe(int N) {
-    while((N--) != 0) {
-      if(N % 100) {
-        std::cout << "Iteration " << N << '\n';
-      }
+  void saveHistory() {
 #if defined(METRICS) 
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
-        D(std::println("Place {} tokens {}", place.getLabel(), place.getTokens()));
+        D(std::println("Place {} contains tokens {} at iteration {}", place.getID(), place.getTokens(), N));
         tokenHistory[place.getLabel()].push_back(place.getTokens());
       }
 #endif
 #endif
+  }
+
+
+  inline void simulateNShuffe(int N) {
+    while((N--) != 0) {
+      saveHistory();
       simulateSingleGradient();
+    }
+    saveHistory();
+  }
+
+  void simulateStoppingCritertion (const uint64_t historyLength = 5, const uint64_t hardThresh = 1'000, const double stdDevThresh = 0.5 ) {
+    uint64_t counter = 0;
+    uint64_t iterationCounter = 0;
+    // How often we check if we should stop
+    const uint64_t saveTimepoint = 5;
+    assert(saveTimepoint >= historyLength);
+    bool continueRunning = true;
+    //TODO This should brake aour analysis scripts because runs might be a different length 
+    while(continueRunning) {
+      if (iterationCounter == hardThresh) { 
+        break;
+      }
+      ++iterationCounter;
+      simulateSingleGradient();
+      saveHistory();
+      counter++;
+      if(counter == saveTimepoint) {
+        std::vector<double> cvs;
+        for(const auto& [label, tokens]: tokenHistory) {
+          //TODO Fix or check somehow
+          auto start = tokens.end() - historyLength;
+          auto end = tokens.end();
+          std::vector<double> last_elements(start, end);
+          auto m = mean(last_elements);
+          auto cv = stdDevOpt(last_elements, m);
+          cvs.push_back(cv);
+        }
+        bool change = false;
+        // Iterate over the stddevs for the last five runs of all the metabolites.
+        // If the std dev is greater than 2, we assume there is still change in the metabolism
+        // and stop checking and go to the next tiemstep. If there is not metabolite with a 
+        // stddev > 2 we assume everything is blocked and stop the simulation
+        for(auto cv : cvs) {
+          //TODO This stupid, metabolites might be on totally different scales.
+          if(cv > stdDevThresh) {
+            change = true;
+            break;
+          }              
+        }
+        continueRunning = change;
+        counter = 0;
+      }
     }
   }
 
-  inline void simulateSingleGradient() {
-    // Vector to store the keys
-    // TODO Preallocate the right capacity
-    std::vector<std::size_t> keys;
-  
-    // Iterate over the map and store keys
-    for (const auto& pair : transitions) {
-        keys.push_back(pair.first);
-    }
-  
-    std::ranges::shuffle(keys, gen);
-    
 
-
+  inline void simulateGivenRxns(const std::vector<ID>& keys) {
     for (const auto& id : keys) {
       // Go over each possible transition and
       // collect outgoing and incoming arcs for that id
@@ -295,7 +311,7 @@ public:
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
-      if(!incomingTokens.empty() && *minIncToken > 0 && incSum > outSum) {
+      if(!incomingTokens.empty() && !outgoingTokens.empty() && *minIncToken > 0 && incSum > outSum) {
         //D(std::cout <<  << *minIncToken << " " << incSum << " " << outSum << "\n";)
         M(const auto& label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
@@ -303,12 +319,12 @@ public:
         D(std::println("{} has fired", id);)
         for(const Arc& arc: outGoingArcs) {
           auto t = places.at(arc.endID).getTokens();
-          places.at(arc.endID).setTokens(t+1);
+          places.at(arc.endID).setTokens(t + arc.edgeWeight);
         }
 
         for(const Arc& arc: inComingArcs) {
           auto t = places.at(arc.startID).getTokens();
-          places.at(arc.startID).setTokens(t -1);
+          places.at(arc.startID).setTokens(t - arc.edgeWeight);
         }
       } // This enables the infinit generation of tokens from Exchanve reactions
       /* else if(inComingArcs.empty() && !outGoingArcs.empty()) {
@@ -325,6 +341,26 @@ public:
         RAH(reactionActivityHistory[transitions.at(id).getLabel()].push_back(false);)
       }
     }
+  }
+
+  inline void simulateSingleGradient() {
+    // Vector to store the keys
+    // TODO Preallocate the right capacity
+    std::vector<ID> keys;
+  
+    // Iterate over the map and store keys
+    for (const auto& pair : transitions) {
+        keys.push_back(pair.first);
+    }
+    
+    std::ranges::shuffle(keys, gen);
+
+    simulateGivenRxns(keys);
+    
+  }
+
+  void setTokens(ID id, std::size_t tokens) {
+    places.at(id).setTokens(tokens);
   }
 
 
@@ -382,12 +418,12 @@ public:
     auto outgoingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: outGoingArcs) {
 
-      D(std::println("Arc {} is leaving from {}",arc.id, id);)
+      //D(std::println("Arc {} is leaving from {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // leave me I know that arc.endID refers to a place
       auto l = places.at(arc.endID).getLabel();
       auto t = places.at(arc.endID).getTokens();
-      D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
+      //D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
       outgoingTokens.push_back(t);
     }
     // NRVO is mandated by C++17
@@ -398,12 +434,12 @@ public:
   std::vector<std::size_t> getIncomingTokens(const std::vector<Arc>& inComingArcs) {
     auto incomingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: inComingArcs) {
-      D(std::println("Arc {} coming into {}",arc.id, id);)
+      //D(std::println("Arc {} coming into {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // coming in to me I know that arc.startID refers to a place
       D(const auto& l = places.at(arc.startID).getLabel(););
       const auto& t = places.at(arc.startID).getTokens();
-      D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
+      //D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
       incomingTokens.push_back(t);
     }
     // NRVO is mandated by C++17

@@ -32,7 +32,9 @@ endif()
 
 find_package(Threads REQUIRED)
 
-add_executable(${TARGET_NAME} main.cpp )
+add_executable(${TARGET_NAME} main.cpp utils.cpp run.cpp )
+target_include_directories(${TARGET_NAME} PUBLIC ../libs/petriNet/include)
+
 target_link_libraries(${TARGET_NAME} PUBLIC bootstrap ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(bootstrap PUBLIC petriNet)
 

@@ -35,9 +35,6 @@ namespace petrinet {
         std::string label = s["label"];
         std::vector<ID> arcIDs = s["arcIDS"];
         D(std::println("Transition {} initialized with id {}", label, id);)
-        D(for (ID i : arcIDs) {
-          std::println("Arc {}", i);
-        })
         addTransition(id, Transition{id, std::move(label), std::move(arcIDs)});
       } else if(s["type"] == "Circle") {
         ID id = s["id"];
@@ -45,9 +42,6 @@ namespace petrinet {
         std::vector<ID> arcIDs = s["arcIDS"];
         std::size_t tokens = s["tokens"];
         D(std::println("Place {} initialized with id {} and {} tokens", label, id, tokens);)
-        D(for (ID i : arcIDs) {
-          std::println("Arc {}", i);
-        })
         addPlace(id, Place{id, std::move(label), std::move(arcIDs), tokens});
       }  else if (s["type"] == "Arc") {
         ID id = s["id"];
@@ -56,7 +50,7 @@ namespace petrinet {
         ID edgeWeight = s["edgeWeight"];
         D(std::println("Arc initialized with id {} from {} to {} with weight {}", id, startID, endID, edgeWeight);)
 
-        addArc(id, {id, startID, endID, edgeWeight});
+        addArc(id, {.id=id, .startID=startID, .endID=endID, .edgeWeight=edgeWeight});
       } else {
         std::cerr << "UNK" << std::endl;
       }

@@ -1,1 +1,86 @@
-{"counter":8,"shapes":[{"id":0,"x":327,"y":394,"label":"","fillColor":"blue","isSelected":false,"arcStart":true,"arcEnd":false,"arcIDS":[2],"hidden":false,"radius":10,"type":"Circle","tokens":0},{"id":1,"x":412,"y":355,"label":"","fillColor":"blue","isSelected":false,"arcStart":true,"arcEnd":true,"arcIDS":[2,6],"hidden":false,"width":20,"height":50,"type":"Rectangle","canFire":false},{"id":2,"label":"","fillColor":"blue","isSelected":false,"arcStart":false,"arcEnd":false,"arcIDS":[],"hidden":false,"startID":0,"endID":1,"type":"Arc","edgeWeight":1},{"id":5,"x":517,"y":384,"label":"","fillColor":"yellow","isSelected":false,"arcStart":false,"arcEnd":true,"arcIDS":[6],"hidden":false,"radius":10,"type":"Circle","tokens":0},{"id":6,"label":"","fillColor":"blue","isSelected":false,"arcStart":false,"arcEnd":false,"arcIDS":[],"hidden":false,"startID":1,"endID":5,"type":"Arc","edgeWeight":1}]}
+{
+  "counter": 8,
+  "shapes": [
+    {
+      "id": 0,
+      "x": 327,
+      "y": 394,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": true,
+      "arcEnd": false,
+      "arcIDS": [
+        2
+      ],
+      "hidden": false,
+      "radius": 10,
+      "type": "Circle",
+      "tokens": 0
+    },
+    {
+      "id": 1,
+      "x": 412,
+      "y": 355,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": true,
+      "arcEnd": true,
+      "arcIDS": [
+        2,
+        6
+      ],
+      "hidden": false,
+      "width": 20,
+      "height": 50,
+      "type": "Rectangle",
+      "canFire": false
+    },
+    {
+      "id": 2,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": false,
+      "arcIDS": [],
+      "hidden": false,
+      "startID": 0,
+      "endID": 1,
+      "type": "Arc",
+      "edgeWeight": 1
+    },
+    {
+      "id": 5,
+      "x": 517,
+      "y": 384,
+      "label": "",
+      "fillColor": "yellow",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": true,
+      "arcIDS": [
+        6
+      ],
+      "hidden": false,
+      "radius": 10,
+      "type": "Circle",
+      "tokens": 0
+    },
+    {
+      "id": 6,
+      "label": "",
+      "fillColor": "blue",
+      "isSelected": false,
+      "arcStart": false,
+      "arcEnd": false,
+      "arcIDS": [],
+      "hidden": false,
+      "startID": 1,
+      "endID": 5,
+      "type": "Arc",
+      "edgeWeight": 1
+    }
+  ]
+}
