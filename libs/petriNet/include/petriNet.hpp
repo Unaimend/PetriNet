@@ -288,7 +288,14 @@ public:
       auto outgoingTokens = getOutGoingTokens(outGoingArcs);
       auto incomingTokens = getIncomingTokens(inComingArcs);
       //TODO I dont need the min I just hae to check that 0 is not in there
-      auto minIncToken = std::ranges::min_element(incomingTokens);
+      bool reactionAllowed = true;
+
+      for(const Arc& arc: inComingArcs) {
+        auto t = places.at(arc.startID).getTokens();
+        if (t < arc.edgeWeight) {
+          reactionAllowed = false;
+        }
+      }
 #ifdef METRICS
 
 #ifdef BLOCKED_BY_COUNT
@@ -311,7 +318,7 @@ public:
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
-      if(!incomingTokens.empty() && !outgoingTokens.empty() && *minIncToken > 0 && incSum > outSum) {
+      if(!incomingTokens.empty() && !outgoingTokens.empty() && reactionAllowed == true && incSum > outSum) {
         //D(std::cout <<  << *minIncToken << " " << incSum << " " << outSum << "\n";)
         M(const auto& label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
@@ -324,6 +331,7 @@ public:
 
         for(const Arc& arc: inComingArcs) {
           auto t = places.at(arc.startID).getTokens();
+          assert(t >= arc.edgeWeight);
           places.at(arc.startID).setTokens(t - arc.edgeWeight);
         }
       } // This enables the infinit generation of tokens from Exchanve reactions
