@@ -9,6 +9,8 @@
 5. Run the application  
     `./Build/bin/simulator data/examples/glycolysis_selfmade.json `
 
+# Build with Clion
+See (isssue14)[https://github.com/Unaimend/PetriNet/issues/14]
 # Running
 The application can be configured via the *config.json*. 
 
