@@ -8,14 +8,12 @@
 #include <cstddef>
 #include <unordered_map>
 #include <iostream>
-#include <ranges>
 #include <numeric>
 #include <random>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <filesystem>
-#include <print>
 #include "../../../src/utils.hpp"
 #define METRICS
 #define TOKEN_HISTORY
@@ -83,7 +81,7 @@ class Place {
 public:
 // TODO Maybe take as lvalue and moce (i.e. no &&)
   Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) noexcept : 
-    id{id}, label{label}, arcs{std::move(arcs)}, tokens{tokens}   {
+    id{id}, label{std::move(label)}, arcs{std::move(arcs)}, tokens{tokens}   {
   }
 
 #ifdef METRICS
@@ -143,7 +141,7 @@ struct Arc {
 class Transition {
 public:
   // TODO Maybe take as lvalue and moce
-  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) noexcept : id{id}, label{label}, arcs{std::move(arcs)}  {
+  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) noexcept : id{id}, label{std::move(label)}, arcs{std::move(arcs)}  {
   }
   Transition(const Transition&) = delete;
   Transition& operator=(const Transition &) = delete;
@@ -336,7 +334,7 @@ public:
       if (outSum >= incSum) {
         const auto& rl = transitions.at(id).getLabel();
         runningAgainstGradient.insert({rl, {}});
-        auto sumIn = 0;
+        unsigned long sumIn = 0;
         for(const Arc& arc: inComingArcs) {
           // Go through all orcs and get their label
           const std::string& l = places.at(arc.startID).getLabel();
@@ -345,7 +343,7 @@ public:
           runningAgainstGradient.at(rl)["in: " + l] = t;
         }
         runningAgainstGradient.at(rl)["inSum"] = sumIn;
-        auto sumOut = 0;
+        unsigned long sumOut = 0;
         for(const Arc& arc: outGoingArcs) {
           // Go through all orcs and get their label
           const std::string& l = places.at(arc.endID).getLabel();
@@ -465,12 +463,12 @@ public:
     auto outgoingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: outGoingArcs) {
 
-      //D(std::println("Arc {} is leaving from {}",arc.id, id);)
+      D(std::println("Arc {} is leaving from {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // leave me I know that arc.endID refers to a place
       auto l = places.at(arc.endID).getLabel();
       auto t = places.at(arc.endID).getTokens();
-      //D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
+      D(std::println("{} has beed added to the outgoing tokens of {} with {} tokens", l, id, t);)
       outgoingTokens.push_back(t);
     }
     // NRVO is mandated by C++17
@@ -481,12 +479,12 @@ public:
   std::vector<std::size_t> getIncomingTokens(const std::vector<Arc>& inComingArcs) {
     auto incomingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: inComingArcs) {
-      //D(std::println("Arc {} coming into {}",arc.id, id);)
+      D(std::println("Arc {} coming into {}",arc.id, id);)
       // Because we are iterating over transitions and looking at arcs that 
       // coming in to me I know that arc.startID refers to a place
       D(const auto& l = places.at(arc.startID).getLabel(););
       const auto& t = places.at(arc.startID).getTokens();
-      //D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
+      D(std::println("{} has beed added to the incoming tokens of {} with {} tokens", l, id, t);)
       incomingTokens.push_back(t);
     }
     // NRVO is mandated by C++17
