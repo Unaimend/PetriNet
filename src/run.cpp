@@ -31,7 +31,9 @@ int run(int  /*argc*/, char** argv, const Config& config) {
     p->saveFinalTokenCount(std::format("FTC_{}.json", i)); 
     p->saveReactionActivityCount(std::format("RAC_{}.json", i));
     p->saveReactionActivityHistory(std::format("RAH_{}.json", i));
+    p->saveBlockedByCount(std::format("BBC_{}.json", i));
     p->saveTokenHistory(std::format("TH_{}.json", i)); //p.saveTokenHistory("TH.json");
+    p->saveRunningAgainstGradient(std::format("RAG_{}.json", i)); //p.saveTokenHistory("TH.json");
     i++;
   }
 

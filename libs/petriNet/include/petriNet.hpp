@@ -22,6 +22,7 @@
 #define REACTION_ACTIVITY_HISTORY
 #define REACTION_ACTIVITY_COUNT
 #define BLOCKED_BY_COUNT
+#define RUNNING_AGAINST_GRADIENT
 
 #ifdef DEBUG
 #define D(x) x
@@ -63,6 +64,11 @@
 #define BBC(x) 
 #endif
 
+#ifdef RUNNING_AGAINST_GRADIENT
+#define RAG(...) __VA_ARGS__
+#else
+#define RAG(...)
+#endif
 
 // TODO CHECK SIZER AND ORDER OF MEMBERS
 void helloFromLib();
@@ -300,14 +306,20 @@ public:
 
 #ifdef BLOCKED_BY_COUNT
       // Because we only fire if the sum of all input tokens is bigger then sum of all output tokens
-      // it would be interesting to know how is responsible for blocking the reactiong
+      // it would be interesting to know who is responsible for blocking the reactiong
       // id is a transition id
       for(const Arc& arc: inComingArcs) {
         // We might be able to use the data from getIncomingTokens from above
+        // inComingArcs are for the current reaction.
+        // Now we go over all incoming arcs and get their labels, tokens, and edge weights
+        // and check if the reaction can't fire because of them
         const std::string& l = places.at(arc.startID).getLabel();
         auto t = places.at(arc.startID).getTokens();
-        if (t == 0) {
+        //I the token of the place at arc.startId are smaller than it's weight
+        // it can't fire
+        if (t < arc.edgeWeight) {
           //l is a blocking input metabolite
+          // Current transition
           const auto& rl = transitions.at(id).getLabel();
           blockedByCount.insert({rl, {}});
           blockedByCount.at(rl)[l] += 1;
@@ -318,6 +330,33 @@ public:
       auto outSum = std::accumulate(outgoingTokens.begin(), outgoingTokens.end(), static_cast<std::size_t>(0));
       auto incSum = std::accumulate(incomingTokens.begin(), incomingTokens.end(), static_cast<std::size_t>(0));
 
+#ifdef METRICS
+#ifdef RUNNING_AGAINST_GRADIENT
+      // The gradient is to big for the ennzyme to fire
+      if (outSum >= incSum) {
+        const auto& rl = transitions.at(id).getLabel();
+        runningAgainstGradient.insert({rl, {}});
+        auto sumIn = 0;
+        for(const Arc& arc: inComingArcs) {
+          // Go through all orcs and get their label
+          const std::string& l = places.at(arc.startID).getLabel();
+          auto t = places.at(arc.startID).getTokens();
+          sumIn += t;
+          runningAgainstGradient.at(rl)["in: " + l] = t;
+        }
+        runningAgainstGradient.at(rl)["inSum"] = sumIn;
+        auto sumOut = 0;
+        for(const Arc& arc: outGoingArcs) {
+          // Go through all orcs and get their label
+          const std::string& l = places.at(arc.endID).getLabel();
+          auto t = places.at(arc.endID).getTokens();
+          sumOut += t;
+          runningAgainstGradient.at(rl)["out: " + l] = t;
+        }
+        runningAgainstGradient.at(rl)["outSum"] = outSum;
+      }
+#endif
+#endif
       if(!incomingTokens.empty() && !outgoingTokens.empty() && reactionAllowed == true && incSum > outSum) {
         //D(std::cout <<  << *minIncToken << " " << incSum << " " << outSum << "\n";)
         M(const auto& label = transitions.at(id).getLabel();)
@@ -459,8 +498,8 @@ public:
   TH(void saveTokenHistory(const std::filesystem::path& path);)
   RAC(void saveReactionActivityCount(const std::filesystem::path& path);)
   RAH(void saveReactionActivityHistory(const std::filesystem::path& path);)
-  BBC(void saveBlockedByCount(const std::filesystem::path& path);)
-  
+  BBC(void saveBlockedByCount(const std::filesystem::path& path);void saveRunningAgainstGradient(const std::filesystem::path &path);)
+
 #endif
 private: 
   //TODO Make one map that contains transition and place that. 
@@ -476,6 +515,7 @@ private:
   RAC(std::unordered_map<std::string, std::size_t> reactionActivity;)
   RAH(std::unordered_map<std::string, std::vector<bool>> reactionActivityHistory;)
   BBC(std::unordered_map<std::string, std::unordered_map<std::string, std::size_t>> blockedByCount;)
+  RAG(std::unordered_map<std::string, std::unordered_map<std::string, std::size_t>> runningAgainstGradient;)
 #endif
 };
 

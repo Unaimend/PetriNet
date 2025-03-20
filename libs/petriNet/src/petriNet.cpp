@@ -148,5 +148,18 @@ namespace petrinet {
 
   }
 #endif
+#ifdef RUNNING_AGAINST_GRADIENT
+  void PetriNet::saveRunningAgainstGradient(const std::filesystem::path& path) {
+    json j;
+    j = runningAgainstGradient;
+    std::ofstream o(path);
+
+    if(o.is_open()) {
+      o << j.dump(2);
+    }
+    o.close();
+
+  }
+#endif
 #endif
 }
