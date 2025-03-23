@@ -29,7 +29,7 @@ with open(args.token_history) as f:
   d = json.load(f)
 
 # This determines how many datapoints to show
-hist_cutoff = 100
+hist_cutoff = 1000
 colors = plt.get_cmap('tab20', 20)
 
 def plot_token_history(d, title, cap = None):
@@ -55,11 +55,11 @@ def plot_token_history(d, title, cap = None):
   plt.ylabel('Values (y-axis)')
   plt.legend()
   plt.title(title)
-  plt.show()
+  #plt.show()
 
 
 
-plot_token_history(d, "All metabolites", cap = 20)
+#plot_token_history(d, "All metabolites", cap = 20)
 #
 #decresing_metabolites = {k: v for k, v in d.items() if v[0] > v[len(v) - 1] }
 #plot_token_history(decresing_metabolites, "Decreasing Metabolites")
@@ -95,13 +95,11 @@ def plot_reaction_activity(reaction_history):
   history_range = history_range[0:hist_cutoff]
   # Create the figure,
   amount_metabolites = len(reaction_history) 
-  _, axs = plt.subplots(amount_metabolites, 1, sharex=True, figsize=(6, 6))
+  _, axs = plt.subplots(amount_metabolites, 1, sharex=True, figsize=(10, amount_metabolites * 2))
   c = 0
   # Plot each boolean vector in its own subplot
   for i, (key, vec) in enumerate(reaction_history.items()):
     c += 1
-    if c == amount_metabolites:
-      break
     v2 = list(map(int, vec[0:hist_cutoff]))
     vec2 = pd.DataFrame(v2).rolling(window=1).sum()
     axs[i].plot(history_range[0:hist_cutoff], vec2[0:hist_cutoff], label=key)
@@ -110,15 +108,18 @@ def plot_reaction_activity(reaction_history):
     axs[i].set_ylabel('', rotation='horizontal', fontsize=20, labelpad=20)
     axs[i].tick_params(axis='y')
     axs[i].legend(loc='upper right')
+    if c == amount_metabolites:
+      break
   
   # Set common x-label
   axs[-1].set_xlabel('Index')
   
   # Adjust the layout to avoid overlap
-  plt.tight_layout()
+  #plt.tight_layout()
   
   # Show plot
   plt.suptitle('Boolean Vectors with Separate Y-Axes Below', y=1.05)
-  plt.show()
+  plt.savefig("reaction_activity.pdf", format="pdf", dpi=800, bbox_inches="tight")
+  #plt.show()
 
 plot_reaction_activity(reaction_history)
