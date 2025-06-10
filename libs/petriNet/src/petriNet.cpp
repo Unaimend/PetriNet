@@ -99,6 +99,12 @@ namespace petrinet {
 #ifdef TOKEN_HISTORY
   void PetriNet::saveTokenHistory(const std::filesystem::path& path) {
     json j;
+    for(auto& [k, v] : tokenHistory) {
+      for(auto& t : v) {
+        t = t / 1;
+      }
+    }
+    
     j = tokenHistory;
     std::ofstream o(path);
 

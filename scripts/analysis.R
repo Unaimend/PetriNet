@@ -30,7 +30,6 @@ load_token_history <- function() {
 
   # Token history is a json file that contains a list for each metabolite
   data2 <- data.frame(metabolite = character(), concentration = numeric(), run = factor())
-
   for(i in 1:THREADS) { 
     # We first convert each list to a df and then make it longer
     data_temp <- as.data.frame(data_list[[i]], check.names = FALSE)
@@ -40,7 +39,8 @@ load_token_history <- function() {
     # and just append it two the full df
     data2 <- rbind(data2, df_plot)
   }
-
+  print(data2 %>% filter(metabolite == "pi_c") %>% group_by(run), n = Inf) 
+  print(data2 %>% filter(metabolite == "pi_e") %>% group_by(run), n = Inf) 
   return(data2)
 }
 
@@ -112,7 +112,7 @@ server <- function(input, output) {
     token_history_data %>%
       filter(if("all" %in% selected_metabolite) TRUE else   metabolite %in% selected_metabolite) %>%
       group_by(run) %>%
-      mutate(rank = row_number()) %>%
+      mutate(rank = row_number()) %>% #TODO I THINK THIS IS A BUG. Sth is wrong wioth the scaling of the x axis. see pi_c. pi_e
       ungroup() %>%
       filter(if(selected_run == "all") TRUE else run == selected_run)  %>%
       filter(rank < input$slider2) %>%
