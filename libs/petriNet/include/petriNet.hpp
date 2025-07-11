@@ -226,6 +226,7 @@ public:
 
   inline void simulateNShuffe(int N) {
     while((N--) != 0) {
+      std::cout << N << std::endl;
       saveHistory();
       simulateSingleGradient();
     }
