@@ -35,7 +35,8 @@ namespace petrinet {
         std::string label = s["label"];
         std::vector<ID> arcIDs = s["arcIDS"];
         D(std::println("Transition {} initialized with id {}", label, id);)
-        addTransition(id, Transition{id, std::move(label), std::move(arcIDs)});
+        bool isABC = s["isABC"];
+        addTransition(id, Transition{id, std::move(label), std::move(arcIDs), isABC});
       } else if(s["type"] == "Circle") {
         ID id = s["id"];
         std::string label = s["label"];

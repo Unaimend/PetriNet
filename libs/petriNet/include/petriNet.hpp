@@ -141,7 +141,7 @@ struct Arc {
 class Transition {
 public:
   // TODO Maybe take as lvalue and moce
-  Transition(ID id, std::string&& label, std::vector<ID>&& arcs) noexcept : id{id}, label{std::move(label)}, arcs{std::move(arcs)}  {
+  Transition(ID id, std::string&& label, std::vector<ID>&& arcs, bool isABC) noexcept : id{id}, label{std::move(label)}, arcs{std::move(arcs)}, isABC{isABC}  {
   }
   Transition(const Transition&) = delete;
   Transition& operator=(const Transition &) = delete;
@@ -169,6 +169,7 @@ public:
   }
 
 
+  bool isABC = false;
 private:
   ID id;
   std::string label;
@@ -332,7 +333,7 @@ public:
 #ifdef METRICS
 #ifdef RUNNING_AGAINST_GRADIENT
       // The gradient is to big for the ennzyme to fire
-      if (outSum >= incSum) {
+      if ((outSum >= incSum) && transitions.at(id).isABC == false) {
         const auto& rl = transitions.at(id).getLabel();
         runningAgainstGradient.insert({rl, {}});
         unsigned long sumIn = 0;
@@ -356,7 +357,7 @@ public:
       }
 #endif
 #endif
-      if(!incomingTokens.empty() && !outgoingTokens.empty() && reactionAllowed == true && incSum > outSum) {
+      if(!incomingTokens.empty() && !outgoingTokens.empty() && reactionAllowed == true && ((incSum > outSum) || transitions.at(id).isABC) ) {
         //D(std::cout <<  << *minIncToken << " " << incSum << " " << outSum << "\n";)
         M(const auto& label = transitions.at(id).getLabel();)
         RAC(reactionActivity[label]++;)
@@ -500,11 +501,11 @@ public:
   BBC(void saveBlockedByCount(const std::filesystem::path& path);void saveRunningAgainstGradient(const std::filesystem::path &path);)
 
 #endif
-private: 
+  std::unordered_map<ID, Transition> transitions;
+private:
   //TODO Make one map that contains transition and place that. 
   //Each elements carries is type as an enum
   std::unordered_map<ID, Place> places;
-  std::unordered_map<ID, Transition> transitions;
   std::unordered_map<ID, Arc> arcs;
   std::random_device rd;
   std::mt19937 gen {rd()};
