@@ -225,8 +225,14 @@ public:
 
 
   inline void simulateNShuffe(int N) {
+    int total = N;
     while((N--) != 0) {
-      std::cout << N << std::endl;
+    double percent_done = 100.0 * (total - N) / total;
+
+      std::cout << "\rIteration: " << std::setw(3) << N
+      << " | " << std::fixed << std::setprecision(1)
+      << percent_done << "% done     " << std::flush;
+
       saveHistory();
       simulateSingleGradient();
     }

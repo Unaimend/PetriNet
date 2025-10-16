@@ -4,6 +4,7 @@ Testing/
 cmake-build-debug/
 test.dot
 test.png
+temp/
 
 TH*
 RAC*
