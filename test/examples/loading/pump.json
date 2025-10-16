@@ -34,7 +34,8 @@
       "width": 20,
       "height": 50,
       "type": "Rectangle",
-      "canFire": false
+      "canFire": false,
+      "isABC": false
     },
     {
       "id": 3,
