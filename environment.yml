@@ -9,6 +9,7 @@ dependencies:
   - clang-format=19.1.2=default_hb5137d0_1
   - clang-format-19=19.1.2=default_hb5137d0_1
   - clang-tools=19.1.2=default_hb5137d0_1
+  - cmake
   - gcc=14.1.0=h6f9ffa1_1
   - gcc_impl_linux-64=14.1.0=h3c94d91_1
   - gxx=14.1.0=h6f9ffa1_1
@@ -34,4 +35,5 @@ dependencies:
   - tzdata=2024a=h8827d51_1
   - xz=5.2.6=h166bdaf_0
   - zstd=1.5.6=ha6fb4c9_0
-prefix: /home/td/mambaforge/envs/simulator
+  - r-tidyverse
+  - r-shinyjs
