@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
 import sys
 from pathlib import Path
 import cobra
 import json
+import pandas as pd
 import math
 from functools import reduce
 import warnings
+import argparse
 
 def remove_water(model: cobra.Model, h2O_ident:list[str] = ["h2o_e","h2o_c","h2o_p"]) -> cobra.Model:
   # check if list of water metabolites exists as metabolite id
@@ -103,7 +106,7 @@ def find_by_property(data: dict[K, V], key: K, value: V) -> Optional[tuple[K, V]
 
 def check_metabolite_connections(model, metabolite_id):
     metabolite = model.metabolites.get_by_id(metabolite_id)
-    #print(f"Metabolite: {metabolite.name}")
+    print(f"Metabolite: {metabolite.name}")
     for reaction in metabolite.reactions:
         print(f" - Reaction: {reaction.id} ({reaction.name})")
         if metabolite in reaction.reactants:
@@ -128,7 +131,7 @@ def load_model(file: Path):
 
 # Writte by ChatGTP
 # Adaptep by me
-def convert(model: cobra.Model, atp_id:str = "atp"):
+def convert(model: cobra.Model, atp_id:list[str] = ["atp_e","atp_c","atp_p"]):
     # Initialize the data structure
     data = {
         "counter": 0,
@@ -156,7 +159,7 @@ def convert(model: cobra.Model, atp_id:str = "atp"):
             "canFire": False if shape_type == "Rectangle" else None,
             "isABC": isABC
         }
-        print(shape)
+        #print(shape)
         return shape
     def create_arc(arc_id, start_id, end_id, weight = 1, label=""):
         arc = {
@@ -174,8 +177,8 @@ def convert(model: cobra.Model, atp_id:str = "atp"):
         return arc
 
     # helper function if reaction is an ABC transporter
-    def isABCrxn(rxn, atp_id = "atp"):
-        return(len(rxn.compartments) > 1 and any([x.id.startswith(atp_id) for x in rxn.metabolites]))
+    def isABCrxn(rxn:cobra.Reaction, atp_id:list[str] = ["atp_e","atp_c","atp_p"]):
+        return(len(rxn.compartments) > 1 and any([x.id in atp_id for x in rxn.metabolites]))
         
 
     
@@ -358,57 +361,87 @@ def set_metabs_constant(json, ids: list[str]):
       elem["edgeWeight"] = 0
   return json
 
+def findAllExternalMetabolites(mod: cobra.Model):
+  # simple function to detect and return all external metabolites of the model
+  # returns a list of metabolites IDs
+  # can be used to fix all external metabolites concentrations when generating the json model
+  return([x.id for x in mod.metabolites if x.compartment == "e"])
+
+def adjustMedium(model:cobra.Model, medium:Path):
+  # load the medium file and adjust the models medium
+
+  df = pd.read_csv(medium)
+  medium_dict = dict(zip(df.iloc[:, 0], df.iloc[:, 1]))
+  model.medium = medium_dict
+  return(model)
+
 
 if __name__ == '__main__':
-  print(f'INPUT <smbfile>  <outputname>')
-  #sys.argv[1] = "../../sbml_examples/e_coli_core.xml"
-  if len(sys.argv) < 3: 
-    print("Please provide 2 arguments.")
+  
+  # define the argparser and which arguments are accepted/expected
+  parser = argparse.ArgumentParser(description = "Transform an SBML model to JSON format to make it compatible with PetriNetSimulator")
+  parser.add_argument("--infile", required = True, help = "Path to the input model in SBML format")
+  parser.add_argument("--outfile", required = True, help = "Path to the output model in JSON format")
+  parser.add_argument("--const_metabolites", default = "None", help = "Path to a json holding the informaton which metabolites should be kept constant (should not be consumed/produced during the simulation). Can be set to 'all' to fix all external metabolites or 'none' (default) to ")
+  parser.add_argument("--remove_biomass", action = "store_true", default = False, help = "Should the biomass function be removed?")
+  parser.add_argument("--biomass_scaling_factor", default = 100, help = "Biomass scaling factor, stoichometry of the biomass will be devided by this factor")
+  parser.add_argument("--h2o_id", default = ["h2o_e","h2o_c","h2o_p"], nargs = "+", help = "Define water metabolite in the model")
+  parser.add_argument("--atp_id", default = ["atp_e","atp_c","atp_p"], nargs = "+", help = "Define the atp metabolites in the model, needed to define ABC reactions")
+  parser.add_argument("--medium", default = "None", help = "A csv containing the medium composition which should be assumed")
 
-  input_file: Path = Path(sys.argv[1])
-  output_file: Path = Path(sys.argv[2])
-  # ids = ["g6p_c", "o2_e"]
-  ids = [
-          "pi_e",
-          "nh4_e",
-          "h_e",
-          "co2_e",
-          "glc__D_e",
-          "h2o_e",
-          "o2_e",
-          "k_e",
-          "fe2_e",
-          "fe3_e",
-          "na1_e",
-          "so4_e",
-          "zn2_e",
-          "tungs_e",
-          "mobd_e",
-          "mg2_e",
-          "mn2_e",
-          "cu2_e",
-          "cobalt2_e",
-          "cl_e",
-          "ca2_e",
-          "cbl1_e"
-]
-
+  args = parser.parse_args()
+  print(args)
+  
+  # get the input model
+  input_file:Path = Path(args.infile)
   model: cobra.Model = load_model(input_file)
-  # The biomass function has non-integer stoichiometry
-  # Thus we remove it for now
-  model = scale_biomass_func(model, 100)
-  #model = remove_biomass_func(model)
+  
+  # adjust the diet if available
+  if args.medium != "None":
+    model = adjustMedium(model, args.medium)
+
+  # define  metabolites which should not be consumed/produced by the model and whose concentration should be constant
+  if args.remove_biomass == True:
+    model = remove_biomass_func(model)
+  else:
+    model = scale_biomass_func(model, args.biomass_scaling_factor)
+
   # There are also other reactions with non-integer stoichiometry
   model = convert_stoichiometry(model, gcd = False)
   assert(get_non_integer_reactions(model) == [])
-  model = remove_water(model)
+
+  # remove water
+  h2os:list[str] = args.h2o_id
+  if len([x.id for x in model.metabolites if x.id in h2os]) == 0:
+    warnings.warn("No h2o found in the model, set '--h2o_id h2o_e h2o_p ...' to the correct values in your model") 
+  model = remove_water(model, h2O_ident = args.h2o_id)
+  
+  # create the actual json
+  atps:list[str] = args.atp_id
+  if len([x.id for x in model.metabolites if x.id in atps]) == 0:
+    warnings.warn("No ATP found in the model, set '--atp_id atp_e atp_p ...' to the correct values in your model") 
   custom_json = convert(model)
-  custom_json = set_metabs_constant(custom_json, ids)
+
+  # define those metabolites which should be held constant
+  if args.const_metabolites.lower() == "all":
+    const_mets = findAllExternalMetabolites(model)
+  elif args.const_metabolites.lower() == "none":
+    const_mets = []
+  else: 
+    with open(args.const_metabolites, "r") as ff:
+      const_mets = json.load(ff)
+
+  print("Constant metabolites")
+  print(const_mets)
+  custom_json = set_metabs_constant(custom_json, const_mets)
+  # add the scaling factor to the json
   custom_json["factor"] = glob_factor
-  cobra.io.write_sbml_model(model, "transformed.xml")
+
+  #cobra.io.write_sbml_model(model, "transformed.xml")
+  # write the model
+  output_file: Path = Path(args.outfile)
   with open(output_file, "w") as outfile:
       json.dump(custom_json, outfile, indent=2)
 
 
-  #check_metabolite_connections(model, "fru26bp_c")
 
