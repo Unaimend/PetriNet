@@ -1,7 +1,3 @@
-// TODO We could remap all the ids to make them contiguous and then use std::vectors for accessing the things
-// When doing this we have to make sure that that we have the different types ordered, because based on an ID
-// we ne do decide(FAST!!!) if an od belongs to and arc or a vec
-// When doing this it might be good to keep the clases AS SMALL as possible SSO for strings (label member) might be problematic there
 #ifndef PETRINET_HPP
 #define PETRINET_HPP
 #include <cassert>
@@ -416,24 +412,24 @@ public:
     places.at(id).setTokens(tokens);
   }
 
-
   std::vector<Arc> getInComingArcs(ID id_) {
     std::vector<Arc> inComingArcs;
-    // TODO Get rid of code duplication
-    //Figure out if its a place or a transition
+    const std::vector<ID>* connectedArcs = nullptr;
+
+    // Figure out if it's a place or a transition and get the list of connected arc IDs
     if(auto it = places.find(id_); it != places.end()) {
-      for(const auto& [id, arc] : arcs) {
-        //TODO Mayube us std::refs to not copy here?
-        if(arc.endID == id_) {
-          inComingArcs.push_back(arc);
-        }
-      }
+      connectedArcs = &it->second.getArcs();
+    } else if (auto it = transitions.find(id_); it != transitions.end()) {
+      connectedArcs = &it->second.getArcs();
     }
 
-    if(auto it = transitions.find(id_); it != transitions.end()) {
-      for(const auto& [id, arc] : arcs) {
-        //TODO Mayube us std::refs to not copy here?
-        if(arc.endID == id_) {
+    if (connectedArcs) {
+      inComingArcs.reserve(connectedArcs->size()); // Pre-allocate for better performance
+      for (const auto& arcID : *connectedArcs) {
+        // Use the arcID to look up the Arc object
+        const Arc& arc = arcs.at(arcID);
+        // Check if the arc is incoming
+        if (arc.endID == id_) {
           inComingArcs.push_back(arc);
         }
       }
@@ -442,23 +438,25 @@ public:
   }
 
 
+
   std::vector<Arc> getOutGoingArcs(ID id_) {
     std::vector<Arc> outGoingArcs;
-    // TODO Get rid of code duplication
-    //Figure out if its a place or a transition
+    const std::vector<ID>* connectedArcs = nullptr;
+
+    // Figure out if it's a place or a transition and get the list of connected arc IDs
     if(auto it = places.find(id_); it != places.end()) {
-      for(const auto& [id, arc] : arcs) {
-        //TODO Mayube us std::refs to not copy here?
-        if(arc.startID == id_) {
-          outGoingArcs.push_back(arc);
-        }
-      }
+      connectedArcs = &it->second.getArcs();
+    } else if (auto it = transitions.find(id_); it != transitions.end()) {
+      connectedArcs = &it->second.getArcs();
     }
 
-    if(auto it = transitions.find(id_); it != transitions.end()) {
-      for(const auto& [id, arc] : arcs) {
-        //TODO Mayube us std::refs to not copy here?
-        if(arc.startID == id_) {
+    if (connectedArcs) {
+      outGoingArcs.reserve(connectedArcs->size()); // Pre-allocate for better performance
+      for (const auto& arcID : *connectedArcs) {
+        // Use the arcID to look up the Arc object
+        const Arc& arc = arcs.at(arcID);
+        // Check if the arc is outgoing
+        if (arc.startID == id_) {
           outGoingArcs.push_back(arc);
         }
       }
@@ -527,4 +525,3 @@ private:
 
 }
 #endif
-
