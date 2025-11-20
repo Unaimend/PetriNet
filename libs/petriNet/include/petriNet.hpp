@@ -25,7 +25,7 @@
 #ifdef DEBUG
 #define D(x) x
 #else
-#define D(x) 
+#define D(x)
 #endif
 
 
@@ -39,27 +39,27 @@
 #ifdef TOKEN_HISTORY
 #define TH(...) __VA_ARGS__
 #else
-#define TH(x) 
+#define TH(x)
 #endif
 
 
 #ifdef REACTION_ACTIVITY_COUNT
 #define RAC(...) __VA_ARGS__
 #else
-#define RAC(x) 
+#define RAC(x)
 #endif
 
 
 #ifdef REACTION_ACTIVITY_HISTORY
 #define RAH(...) __VA_ARGS__
 #else
-#define RAH(x) 
+#define RAH(x)
 #endif
 
 #ifdef BLOCKED_BY_COUNT
 #define BBC(...) __VA_ARGS__
 #else
-#define BBC(x) 
+#define BBC(x)
 #endif
 
 #ifdef RUNNING_AGAINST_GRADIENT
@@ -70,7 +70,7 @@
 
 // TODO CHECK SIZER AND ORDER OF MEMBERS
 void helloFromLib();
-namespace petrinet { 
+namespace petrinet {
 using ID = std::size_t;
 
 // TODO Those could be made into the same type
@@ -80,12 +80,12 @@ using ID = std::size_t;
 class Place {
 public:
 // TODO Maybe take as lvalue and moce (i.e. no &&)
-  Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) noexcept : 
+  Place(ID id, std::string&& label, std::vector<ID>&& arcs, std::size_t tokens) noexcept :
     id{id}, label{std::move(label)}, arcs{std::move(arcs)}, tokens{tokens}   {
   }
 
 #ifdef METRICS
-  //maybe replace by 
+  //maybe replace by
   //copy(const Place& p)
   //{
   //  return Place(p.get..)
@@ -151,19 +151,19 @@ public:
   ~Transition() = default;
 
   //TODO implement the && versions
-  //std::string getName() && { // when we no longer need the value return std::move(name); // we steal and return by value 
+  //std::string getName() && { // when we no longer need the value return std::move(name); // we steal and return by value
   //}
-  
-  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
+
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81)
   [[nodiscard]] const std::string& getLabel() const noexcept {
     return label;
   }
 
-  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81)
   [[nodiscard]] const ID&  getID() const noexcept {
     return id;
   }
-  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81) 
+  // This is prolblematic when being called on an temporary object(c++ move semantic p. 81)
   [[nodiscard]] const std::vector<ID>&  getArcs() const noexcept {
     return arcs;
   }
@@ -197,24 +197,24 @@ public:
     arcs.insert_or_assign(id, arc);
   }
 
-  const std::unordered_map<ID, Transition>& getTransitions() const & {  
+  const std::unordered_map<ID, Transition>& getTransitions() const & {
     return transitions;
   }
 
 
-  const std::unordered_map<ID, Place>& getPlaces() const & {  
+  const std::unordered_map<ID, Place>& getPlaces() const & {
     return places;
   }
 
 
-  const std::unordered_map<ID, Arc>& getArcs() const & {  
+  const std::unordered_map<ID, Arc>& getArcs() const & {
     return arcs;
   }
 
   void toDot(const std::filesystem::path& path);
 
   void saveHistory() {
-#if defined(METRICS) 
+#if defined(METRICS)
 #ifdef TOKEN_HISTORY
       for(auto& [id, place] : places) {
         D(std::println("Place {} contains tokens {} at iteration {}", place.getID(), place.getTokens(), N));
@@ -247,9 +247,9 @@ public:
     const uint64_t saveTimepoint = 5;
     assert(saveTimepoint >= historyLength);
     bool continueRunning = true;
-    //TODO This should brake aour analysis scripts because runs might be a different length 
+    //TODO This should brake aour analysis scripts because runs might be a different length
     while(continueRunning) {
-      if (iterationCounter == hardThresh) { 
+      if (iterationCounter == hardThresh) {
         break;
       }
       ++iterationCounter;
@@ -270,14 +270,14 @@ public:
         bool change = false;
         // Iterate over the stddevs for the last five runs of all the metabolites.
         // If the std dev is greater than 2, we assume there is still change in the metabolism
-        // and stop checking and go to the next tiemstep. If there is not metabolite with a 
+        // and stop checking and go to the next tiemstep. If there is not metabolite with a
         // stddev > 2 we assume everything is blocked and stop the simulation
         for(auto cv : cvs) {
           //TODO This stupid, metabolites might be on totally different scales.
           if(cv > stdDevThresh) {
             change = true;
             break;
-          }              
+          }
         }
         continueRunning = change;
         counter = 0;
@@ -389,7 +389,7 @@ public:
           auto t = places.at(arc.endID).getTokens();
           places.at(arc.endID).setTokens(t+1);
         }
-      } */ 
+      } */
       else {
         RAH(reactionActivityHistory[transitions.at(id).getLabel()].push_back(false);)
       }
@@ -400,16 +400,16 @@ public:
     // Vector to store the keys
     // TODO Preallocate the right capacity
     std::vector<ID> keys;
-  
+
     // Iterate over the map and store keys
     for (const auto& pair : transitions) {
         keys.push_back(pair.first);
     }
-    
+
     std::ranges::shuffle(keys, gen);
 
     simulateGivenRxns(keys);
-    
+
   }
 
   void setTokens(ID id, std::size_t tokens) {
@@ -472,7 +472,7 @@ public:
     for(const Arc& arc: outGoingArcs) {
 
       D(std::println("Arc {} is leaving from {}",arc.id, id);)
-      // Because we are iterating over transitions and looking at arcs that 
+      // Because we are iterating over transitions and looking at arcs that
       // leave me I know that arc.endID refers to a place
       auto l = places.at(arc.endID).getLabel();
       auto t = places.at(arc.endID).getTokens();
@@ -488,7 +488,7 @@ public:
     auto incomingTokens = std::vector<std::size_t>{};
     for(const Arc& arc: inComingArcs) {
       D(std::println("Arc {} coming into {}",arc.id, id);)
-      // Because we are iterating over transitions and looking at arcs that 
+      // Because we are iterating over transitions and looking at arcs that
       // coming in to me I know that arc.startID refers to a place
       D(const auto& l = places.at(arc.startID).getLabel(););
       const auto& t = places.at(arc.startID).getTokens();
@@ -500,7 +500,7 @@ public:
   }
 
   void saveFinalTokenCount(const std::filesystem::path& path);
-#if defined(METRICS) 
+#if defined(METRICS)
   TH(void saveTokenHistory(const std::filesystem::path& path);)
   RAC(void saveReactionActivityCount(const std::filesystem::path& path);)
   RAH(void saveReactionActivityHistory(const std::filesystem::path& path);)
@@ -509,7 +509,7 @@ public:
 #endif
   std::unordered_map<ID, Transition> transitions;
 private:
-  //TODO Make one map that contains transition and place that. 
+  //TODO Make one map that contains transition and place that.
   //Each elements carries is type as an enum
   std::unordered_map<ID, Place> places;
   std::unordered_map<ID, Arc> arcs;
