@@ -96,4 +96,27 @@ int main() {
     expect(p.getPlaces().at(0).getTokens() == 6);
     expect(p.getPlaces().at(10).getTokens() == 6);
   };
+
+  "Basic isABC"_test = [] {
+    petrinet::PetriNet p;
+    p.loadFromJSON("../../test/examples/loading/smallest_example.json");
+    expect(p.getPlaces().size() == 2);
+    expect(p.getTransitions().size() == 1);
+    expect(p.getArcs().size() == 2);
+
+    p.setTokens(0, 10);
+    // Test if the gradient works.
+    // After 5 executions the tokens for all places are 5.
+    // And thus the gradient is 0 so firing a 6th time should not do anything
+    p.simulateGivenRxns({1, 1, 1, 1, 1});
+     
+    expect(p.getPlaces().at(0).getTokens() == 5);
+    expect(p.getPlaces().at(5).getTokens() == 5);
+    p.transitions.at(1).isABC = true;
+    p.simulateGivenRxns({1});
+    expect(p.getPlaces().at(0).getTokens() == 4);
+    expect(p.getPlaces().at(5).getTokens() == 6);
+  };
+
+
 }
